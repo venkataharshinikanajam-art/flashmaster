@@ -7,6 +7,10 @@ import express from "express";
 import { connectDB } from "./config/db.js";
 import usersRouter from "./routes/users.js";
 import authRouter from "./routes/auth.js";
+import materialsRouter from "./routes/materials.js";
+import flashcardsRouter from "./routes/flashcards.js";
+import plansRouter from "./routes/plans.js";
+import progressRouter from "./routes/progress.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -34,6 +38,10 @@ app.get("/api/hello", (req, res) => {
 // Mount routers
 app.use("/api/auth", authRouter);
 app.use("/api/users", usersRouter);
+app.use("/api/materials", materialsRouter);
+app.use("/api/flashcards", flashcardsRouter);
+app.use("/api/plans", plansRouter);
+app.use("/api/progress", progressRouter);
 
 // 404 catch-all
 app.use((req, res) => {

@@ -8,9 +8,9 @@ Track the journey. One line per milestone. The past and present of the project.
 
 ## Current status
 
-**Current phase:** Phase 3 — Database basics ✅ **COMPLETE**
-**Next phase:** Phase 4 — Authentication (manual JWT + bcrypt)
-**Overall:** 4 / 14 phases complete
+**Current phase:** Phase 4 — Authentication ✅ **COMPLETE**
+**Next phase:** Phase 5 — Core models (StudyMaterial, Flashcard, StudyPlan, Progress)
+**Overall:** 5 / 14 phases complete
 
 ---
 
@@ -20,7 +20,7 @@ Track the journey. One line per milestone. The past and present of the project.
 - [x] **Phase 1 — JavaScript crash course** (condensed — variables, functions, objects, arrays, destructuring, spread, map/filter/reduce, async/await) ✅
 - [x] **Phase 2 — Backend Hello World** (Express 5, routes, middleware, req/res, JSON, URL params, 404 catch-all) ✅
 - [x] **Phase 3 — Database basics** (MongoDB + Mongoose, User model with validation, full CRUD routes, env vars with dotenv, folder structure: config/models/routes) ✅
-- [ ] **Phase 4 — Authentication** (manual JWT + bcrypt, protected routes, roles)
+- [x] **Phase 4 — Authentication** (manual JWT + bcrypt signup/login/me, requireAuth + requireRole middleware, role-based access, passwordHash hiding via select:false + toJSON transform, 401 vs 403 status codes) ✅
 - [ ] **Phase 5 — Core models** (StudyMaterial, Flashcard, StudyPlan, Progress)
 - [ ] **Phase 6 — File uploads** (Multer, pdf-parse, local storage)
 - [ ] **Phase 7 — Flashcard generation** (heuristic rules: text → Q&A)
