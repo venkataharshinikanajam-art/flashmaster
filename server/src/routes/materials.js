@@ -11,6 +11,15 @@ import { Flashcard } from "../models/Flashcard.js";
 import { requireAuth } from "../middleware/auth.js";
 import { upload } from "../middleware/upload.js";
 import { generateFlashcards } from "../services/flashcardGenerator.js";
+import { generateFlashcardsWithOllama } from "../services/ollamaGenerator.js";
+
+// Try Ollama first (local LLM), fall back to the heuristic generator.
+// Returns { cards, source } — source is "ollama" or "heuristic".
+const generateCards = async (text) => {
+  const ai = await generateFlashcardsWithOllama(text);
+  if (ai && ai.length > 0) return { cards: ai, source: "ollama" };
+  return { cards: generateFlashcards(text, { max: 20 }), source: "heuristic" };
+};
 
 // pdf-parse v2 uses a class-based API.
 import { PDFParse } from "pdf-parse";
@@ -73,8 +82,8 @@ router.post("/upload", upload.single("file"), async (req, res) => {
       sourceFile: path.basename(req.file.path),
     });
 
-    // Auto-generate flashcards from the extracted text.
-    const generated = generateFlashcards(content, { max: 20 });
+    // Auto-generate flashcards from the extracted text (Ollama if available, else heuristic).
+    const { cards: generated, source } = await generateCards(content);
     const cards = await Flashcard.insertMany(
       generated.map((c) => ({
         ...c,
@@ -87,6 +96,7 @@ router.post("/upload", upload.single("file"), async (req, res) => {
     res.status(201).json({
       material,
       flashcardsCreated: cards.length,
+      generator: source,
       meta: {
         originalName: req.file.originalname,
         mimetype: req.file.mimetype,
@@ -144,7 +154,7 @@ router.post("/:id/generate-flashcards", async (req, res) => {
       await Flashcard.deleteMany({ userId: req.user._id, materialId: material._id });
     }
 
-    const generated = generateFlashcards(material.content, { max: 20 });
+    const { cards: generated, source } = await generateCards(material.content);
     const cards = await Flashcard.insertMany(
       generated.map((c) => ({
         ...c,
@@ -154,7 +164,7 @@ router.post("/:id/generate-flashcards", async (req, res) => {
       }))
     );
 
-    res.status(201).json({ created: cards.length, cards });
+    res.status(201).json({ created: cards.length, generator: source, cards });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

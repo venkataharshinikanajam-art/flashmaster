@@ -8,9 +8,9 @@ Track the journey. One line per milestone. The past and present of the project.
 
 ## Current status
 
-**Current phase:** Phase 7 — Flashcard generation ✅ **COMPLETE**
-**Next phase:** Phase 8 — Frontend Hello World (Vite + React + Tailwind)
-**Overall:** 8 / 14 phases complete — BACKEND DONE 🎉
+**Current phase:** ALL PHASES COMPLETE 🎉
+**Next phase:** — (project shippable; optional: install Ollama for AI cards, deploy)
+**Overall:** 14 / 14 phases complete
 
 ---
 
@@ -24,12 +24,12 @@ Track the journey. One line per milestone. The past and present of the project.
 - [x] **Phase 5 — Core models** (StudyMaterial/Flashcard/StudyPlan/Progress schemas with refs, full CRUD routes scoped to req.user, `.populate()` for joins, ownership filtering pattern, query filters, Progress upsert by unique (user,subject) index) ✅
 - [x] **Phase 6 — File uploads** (Multer disk storage with size + mimetype limits, pdf-parse v2 class API for text extraction, POST /api/materials/upload, sourceFile field, Express 4-arg JSON error handler, pdfkit for test PDF generation) ✅
 - [x] **Phase 7 — Flashcard generation** (pure-function service, pattern matching for "X is Y" / "X are Y" / "X means Y" / "X: Y", auto-gen on upload + manual regenerate endpoint with ?replace, difficulty inferred from answer length, stopword filter) ✅
-- [ ] **Phase 8 — Frontend Hello World** (Vite + React + Tailwind)
-- [ ] **Phase 9 — Frontend auth + routing** (React Router, protected routes)
-- [ ] **Phase 10 — Frontend features** (dashboard, upload, study, plan, progress)
-- [ ] **Phase 11 — Admin dashboard** (role-based UI, user management)
-- [ ] **Phase 12 — Polish** (loading, errors, responsive, notifications)
-- [ ] **Phase 13 — Advanced** (Ollama local AI, OCR, dark mode)
+- [x] **Phase 8 — Frontend Hello World** (Vite 8 + React 19 + Tailwind 4, CORS config on backend) ✅
+- [x] **Phase 9 — Frontend auth + routing** (React Router 7, AuthContext, ProtectedRoute, token in localStorage, api.js fetch wrapper) ✅
+- [x] **Phase 10 — Frontend features** (Home landing, Dashboard with stats, Materials upload/list/delete, Flashcards with study mode and difficulty, Plans with days-until countdown) ✅
+- [x] **Phase 11 — Admin dashboard** (role-gated route, user table) ✅
+- [x] **Phase 12 — Polish** (root package.json with `npm run dev` via concurrently, full README rewrite with quickstart and endpoint docs) ✅
+- [x] **Phase 13 — Advanced** (Ollama local LLM integration with graceful fallback to heuristic, generator source reported in API response) ✅
 
 ---
 
