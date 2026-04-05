@@ -4,21 +4,16 @@
 
 import { Router } from "express";
 import { User } from "../models/User.js";
+import { requireAuth, requireRole } from "../middleware/auth.js";
 
 const router = Router();
 
-// CREATE — POST /api/users
-router.post("/", async (req, res) => {
-  try {
-    const user = await User.create(req.body);
-    res.status(201).json(user);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
+// NOTE: direct POST /api/users is deprecated now that signup exists
+// on /api/auth/signup. Keeping it here for Phase 3 continuity, but
+// later phases will remove it. It still requires auth below.
 
-// READ ALL — GET /api/users
-router.get("/", async (req, res) => {
+// READ ALL — GET /api/users  (admin only)
+router.get("/", requireAuth, requireRole("admin"), async (req, res) => {
   const users = await User.find().sort({ createdAt: -1 });
   res.json(users);
 });

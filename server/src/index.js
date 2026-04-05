@@ -6,6 +6,7 @@ import "dotenv/config"; // load .env BEFORE anything else
 import express from "express";
 import { connectDB } from "./config/db.js";
 import usersRouter from "./routes/users.js";
+import authRouter from "./routes/auth.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -30,7 +31,8 @@ app.get("/api/hello", (req, res) => {
   });
 });
 
-// Mount the user CRUD router at /api/users
+// Mount routers
+app.use("/api/auth", authRouter);
 app.use("/api/users", usersRouter);
 
 // 404 catch-all

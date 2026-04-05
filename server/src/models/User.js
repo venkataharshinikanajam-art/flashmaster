@@ -1,6 +1,5 @@
 // ===================================================================
-// User model — defines the shape of a user document in MongoDB.
-// Password handling arrives in Phase 4 (auth) — for now, no password.
+// User model
 // ===================================================================
 
 import mongoose from "mongoose";
@@ -17,21 +16,34 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       required: [true, "Email is required"],
-      unique: true,         // MongoDB rejects duplicates
+      unique: true,
       trim: true,
-      lowercase: true,      // store emails in lowercase
+      lowercase: true,
       match: [/.+@.+\..+/, "Invalid email format"],
+    },
+    passwordHash: {
+      type: String,
+      required: [true, "Password is required"],
+      select: false, // never return it in normal queries
     },
     role: {
       type: String,
-      enum: ["student", "admin"],   // only these two values allowed
+      enum: ["student", "admin"],
       default: "student",
     },
   },
   {
-    timestamps: true, // auto-adds createdAt and updatedAt fields
+    timestamps: true,
+    toJSON: {
+      // When this user is serialized to JSON (e.g., res.json(user)),
+      // strip passwordHash and the internal __v version key.
+      transform(doc, ret) {
+        delete ret.passwordHash;
+        delete ret.__v;
+        return ret;
+      },
+    },
   }
 );
 
-// Mongoose takes "User" and makes the collection name "users" (lowercased + pluralized).
 export const User = mongoose.model("User", userSchema);
