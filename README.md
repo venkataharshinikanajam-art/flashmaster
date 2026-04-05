@@ -2,7 +2,7 @@
 
 A full-stack MERN web app that helps students prepare for exams by turning their study materials into flashcards, organizing them by subject, and tracking revision progress.
 
-Built as a university project for **SRM Full-Stack Development**, from scratch and by hand — with every piece designed as a learning exercise.
+Built by **Venkata Harshini Kanajam** as a university project for **SRM Full-Stack Development** — from scratch and by hand, with every piece designed as a learning exercise.
 
 ## Features
 
@@ -115,4 +115,8 @@ All `/api/*` endpoints (except `/api/auth/signup` and `/api/auth/login`) require
 
 ## License
 
-MIT
+MIT — see [LICENSE](./LICENSE).
+
+## Author
+
+Built by **Venkata Harshini Kanajam** · SRM University AP · Full-Stack Development course
