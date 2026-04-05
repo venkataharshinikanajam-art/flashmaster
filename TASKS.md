@@ -1,39 +1,35 @@
 # Tasks — Right Now
 
-Only the **current phase's active tasks** live here. When a phase ends, this file is cleared and refilled with the next phase's tasks.
+Only the **current phase's active tasks** live here.
 
-> - **[ ]** = pending
-> - **[~]** = in progress
-> - **[x]** = done (move to PROGRESS.md at end of phase)
+> - **[ ]** = pending · **[~]** = in progress · **[x]** = done
 
 ---
 
-## Phase 0 — Foundations
+## Phase 1 — JavaScript Crash Course (ACTIVE)
 
-### Your tasks (Harsh)
+### Sessions
+- [~] **1.1** Running JS + variables + strings (`sandbox/js-basics/01-hello.js`)
+- [ ] **1.2** Functions (regular vs arrow) + scope (`02-functions.js`)
+- [ ] **1.3** Objects + arrays + destructuring (`03-objects-arrays.js`)
+- [ ] **1.4** Array methods: `.map()`, `.filter()`, `.reduce()` (`04-array-methods.js`)
+- [ ] **1.5** Modules: `import`/`export` (`05-modules/`)
+- [ ] **1.6** Promises + `async`/`await` (`06-async.js`)
 
-- [ ] Read `docs/learning/what-is-fullstack.md` and answer its 4 questions
-- [ ] Read `docs/00-start-here.md`
-- [ ] Read `docs/02-how-we-work.md`
-- [ ] Read `docs/ai-prompting-guide.md`
-- [ ] Skim `docs/glossary.md` (just to know it exists)
-- [ ] Install MongoDB Community Edition + Compass — follow `docs/01-tools-setup.md` §4
-- [ ] Add MongoDB's `bin` folder to PATH
-- [ ] Run all 5 version checks: `node -v`, `npm -v`, `git --version`, `code --version`, `mongod --version`
-- [ ] Open MongoDB Compass and connect to `mongodb://localhost:27017`
-- [ ] Open a bash terminal, navigate to FLASHCARDS folder
-- [ ] Try `pwd`, `ls`, `ls -la`, `cd docs`, `cd ..` a few times
-- [ ] Run `git init` inside FLASHCARDS
-- [ ] Configure git: `git config --global user.name "..."` and `user.email "..."`
-- [ ] Run `git add .` and `git status`
-- [ ] Run `git commit -m "chore: scaffold FLASHMASTER project structure"`
-- [ ] Run `git log --oneline` to confirm your first commit
-- [ ] *(Optional)* Create a GitHub repo and push
-- [ ] Answer all 7 Phase 0 checkpoint questions (from `docs/phases/phase-00-foundations.md` §5)
-- [ ] Add reflection line to `PROGRESS.md` under Phase 0
-- [ ] Tell Claude: "Phase 0 done — please write Phase 1 playbook"
+### Per session, you should
+- [ ] Read the concept explanation in chat
+- [ ] Run the script with `node <filename>` and read the output
+- [ ] Complete the small challenge Claude gives you
+- [ ] Answer the checkpoint questions (in your head or out loud)
+- [ ] Commit your work with a meaningful message
+
+### Phase 1 exit criteria
+- [ ] All 6 scripts run without errors
+- [ ] Can answer all 18 checkpoint questions across sessions
+- [ ] Update `PROGRESS.md` with Phase 1 reflection
+- [ ] Ready to say: "phase 1 done — start phase 2"
 
 ### Notes to self
-*(Jot anything you want to remember here while working. Questions for Claude, things that confused you, etc.)*
+*(Jot anything you want to remember here while working.)*
 
 ---

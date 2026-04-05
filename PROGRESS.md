@@ -8,16 +8,16 @@ Track the journey. One line per milestone. The past and present of the project.
 
 ## Current status
 
-**Current phase:** Phase 0 — Foundations
-**Next phase:** Phase 1 — JavaScript Crash Course
-**Overall:** 0 / 14 phases complete
+**Current phase:** Phase 1 — JavaScript Crash Course ✅ **COMPLETE**
+**Next phase:** Phase 2 — Backend Hello World (Express) — ready to start
+**Overall:** 2 / 14 phases complete
 
 ---
 
 ## Phase checklist
 
-- [ ] **Phase 0 — Foundations** (setup, terminal, git, full-stack concepts)
-- [ ] **Phase 1 — JavaScript crash course** (ES6 essentials for C/Python devs)
+- [x] **Phase 0 — Foundations** (setup, terminal, git, full-stack concepts) ✅
+- [x] **Phase 1 — JavaScript crash course** (condensed — variables, functions, objects, arrays, destructuring, spread, map/filter/reduce, async/await) ✅
 - [ ] **Phase 2 — Backend Hello World** (Express, routes, middleware)
 - [ ] **Phase 3 — Database basics** (MongoDB + Mongoose, User CRUD)
 - [ ] **Phase 4 — Authentication** (manual JWT + bcrypt, protected routes, roles)
@@ -45,25 +45,40 @@ Track the journey. One line per milestone. The past and present of the project.
 - [x] Phase 0 playbook written
 - [x] Tracking files created (PROGRESS.md, TASKS.md, TODO.md)
 
-### In progress / Harsh's work
+### Done
 - [x] Install MongoDB Community Edition + Compass ✅
-- [x] Add MongoDB to Windows User PATH ✅
+- [x] Add MongoDB to Windows User PATH (via PowerShell) ✅
 - [x] Confirm MongoDB service is running (state: RUNNING) ✅
 - [x] Connect MongoDB Compass to localhost:27017 (saw admin/config/local dbs) ✅
 - [x] Verify all 5 tools with version commands ✅
-- [ ] Learn basic terminal navigation (pwd, ls, cd)
-- [ ] `git init` inside FLASHCARDS and make first commit
-- [ ] (Optional) push to GitHub
-- [ ] Answer Phase 0 checkpoint questions
+- [x] Learn basic terminal navigation (`pwd`, `ls`, `ls -la`, `cd`, `cd ..`) ✅
+- [x] Configure git globally (user.name, user.email, init.defaultBranch=main) ✅
+- [x] `git init` inside FLASHCARDS (isolated from rogue home repo) ✅
+- [x] **First commit:** `868b54e chore: scaffold FLASHMASTER project structure` — 21 files, 2134 lines ✅
 
-### Reflection
-*(Add a line or two here when Phase 0 is complete: what you learned, what confused you.)*
+### Deferred (optional)
+- [ ] Create a GitHub account and push this repo (can do anytime)
+- [ ] Update git email from placeholder `harsh@localhost` to real email when creating GitHub
+
+### Reflection (Phase 0)
+Harsh's first-ever set of dev tools are now working: Node, npm, git, VS Code, MongoDB. Learned what full-stack means (restaurant analogy), what PATH is, basic bash navigation, and the git init → add → commit → log workflow. The first commit is a personal milestone — 21 files safely in version control. Main takeaway: the toolchain is ready, now we start writing actual JavaScript.
 
 ---
 
-## Phase 1 — JavaScript Crash Course
+## Phase 1 — JavaScript Crash Course ✅ COMPLETE
 
-*(Playbook to be written when Phase 0 is done.)*
+Playbook: [`docs/phases/phase-01-js-crash-course.md`](./docs/phases/phase-01-js-crash-course.md)
+Demo scripts: `sandbox/js-basics/01-hello.js`, `sandbox/js-basics/02-everything.js`
+
+Covered in a condensed, read-and-watch format (per Harsh's pacing preference):
+- Running JS with Node, `console.log`
+- `let` vs `const` (never `var`), the 6 main types, template literals, `===` vs `==`
+- Functions: regular + arrow, functions as values
+- Objects, arrays, destructuring, spread
+- `.map()`, `.filter()`, `.reduce()` chaining
+- Promises and `async`/`await`
+
+**Reflection:** JS isn't scary coming from C/Python — mostly it's new syntax for familiar concepts, with a few genuinely new things (arrow functions, destructuring, async/await) that will come up constantly in the rest of the project. The modules topic (`import`/`export`) was deferred to Phase 2 where we'll meet it naturally.
 
 ---
 
