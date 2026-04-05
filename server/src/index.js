@@ -48,6 +48,14 @@ app.use((req, res) => {
   res.status(404).json({ error: "Not Found", path: req.url });
 });
 
+// JSON error handler — runs when any middleware/route calls next(err) or throws.
+// Express identifies error handlers by the 4-argument signature (err, req, res, next).
+app.use((err, req, res, next) => {
+  console.error("ERROR:", err.message);
+  const status = err.status || 400;
+  res.status(status).json({ error: err.message || "Internal server error" });
+});
+
 // ---------- Startup: connect to DB, then listen ----------
 const start = async () => {
   await connectDB();

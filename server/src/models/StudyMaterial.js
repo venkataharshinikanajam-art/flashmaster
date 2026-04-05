@@ -29,6 +29,10 @@ const studyMaterialSchema = new mongoose.Schema(
       type: String,
       required: [true, "Content is required"],
     },
+    sourceFile: {
+      type: String,     // basename of the file in server/uploads/, if uploaded
+      default: null,
+    },
   },
   { timestamps: true }
 );
