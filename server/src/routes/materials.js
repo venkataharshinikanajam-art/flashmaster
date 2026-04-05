@@ -7,8 +7,10 @@ import { Router } from "express";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { StudyMaterial } from "../models/StudyMaterial.js";
+import { Flashcard } from "../models/Flashcard.js";
 import { requireAuth } from "../middleware/auth.js";
 import { upload } from "../middleware/upload.js";
+import { generateFlashcards } from "../services/flashcardGenerator.js";
 
 // pdf-parse v2 uses a class-based API.
 import { PDFParse } from "pdf-parse";
@@ -68,13 +70,23 @@ router.post("/upload", upload.single("file"), async (req, res) => {
       title,
       subject,
       content,
-      // Save the file path (relative to server/) so we can reference it later.
-      // Using path.basename avoids leaking absolute paths in responses.
       sourceFile: path.basename(req.file.path),
     });
 
+    // Auto-generate flashcards from the extracted text.
+    const generated = generateFlashcards(content, { max: 20 });
+    const cards = await Flashcard.insertMany(
+      generated.map((c) => ({
+        ...c,
+        userId: req.user._id,
+        materialId: material._id,
+        subject,
+      }))
+    );
+
     res.status(201).json({
       material,
+      flashcardsCreated: cards.length,
       meta: {
         originalName: req.file.originalname,
         mimetype: req.file.mimetype,
@@ -116,6 +128,33 @@ router.patch("/:id", async (req, res) => {
     );
     if (!material) return res.status(404).json({ error: "Not found" });
     res.json(material);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// GENERATE flashcards from an existing material.
+// Optional query: ?replace=true  → delete existing cards for this material first.
+router.post("/:id/generate-flashcards", async (req, res) => {
+  try {
+    const material = await StudyMaterial.findOne({ _id: req.params.id, userId: req.user._id });
+    if (!material) return res.status(404).json({ error: "Material not found" });
+
+    if (req.query.replace === "true") {
+      await Flashcard.deleteMany({ userId: req.user._id, materialId: material._id });
+    }
+
+    const generated = generateFlashcards(material.content, { max: 20 });
+    const cards = await Flashcard.insertMany(
+      generated.map((c) => ({
+        ...c,
+        userId: req.user._id,
+        materialId: material._id,
+        subject: material.subject,
+      }))
+    );
+
+    res.status(201).json({ created: cards.length, cards });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

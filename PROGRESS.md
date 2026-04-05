@@ -8,9 +8,9 @@ Track the journey. One line per milestone. The past and present of the project.
 
 ## Current status
 
-**Current phase:** Phase 5 — Core models ✅ **COMPLETE**
-**Next phase:** Phase 6 — File uploads (Multer + pdf-parse)
-**Overall:** 6 / 14 phases complete
+**Current phase:** Phase 6 — File uploads ✅ **COMPLETE**
+**Next phase:** Phase 7 — Flashcard generation (heuristic rules)
+**Overall:** 7 / 14 phases complete
 
 ---
 
@@ -22,7 +22,7 @@ Track the journey. One line per milestone. The past and present of the project.
 - [x] **Phase 3 — Database basics** (MongoDB + Mongoose, User model with validation, full CRUD routes, env vars with dotenv, folder structure: config/models/routes) ✅
 - [x] **Phase 4 — Authentication** (manual JWT + bcrypt signup/login/me, requireAuth + requireRole middleware, role-based access, passwordHash hiding via select:false + toJSON transform, 401 vs 403 status codes) ✅
 - [x] **Phase 5 — Core models** (StudyMaterial/Flashcard/StudyPlan/Progress schemas with refs, full CRUD routes scoped to req.user, `.populate()` for joins, ownership filtering pattern, query filters, Progress upsert by unique (user,subject) index) ✅
-- [ ] **Phase 6 — File uploads** (Multer, pdf-parse, local storage)
+- [x] **Phase 6 — File uploads** (Multer disk storage with size + mimetype limits, pdf-parse v2 class API for text extraction, POST /api/materials/upload, sourceFile field, Express 4-arg JSON error handler, pdfkit for test PDF generation) ✅
 - [ ] **Phase 7 — Flashcard generation** (heuristic rules: text → Q&A)
 - [ ] **Phase 8 — Frontend Hello World** (Vite + React + Tailwind)
 - [ ] **Phase 9 — Frontend auth + routing** (React Router, protected routes)
