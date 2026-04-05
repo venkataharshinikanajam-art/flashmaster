@@ -8,9 +8,9 @@ Track the journey. One line per milestone. The past and present of the project.
 
 ## Current status
 
-**Current phase:** Phase 6 — File uploads ✅ **COMPLETE**
-**Next phase:** Phase 7 — Flashcard generation (heuristic rules)
-**Overall:** 7 / 14 phases complete
+**Current phase:** Phase 7 — Flashcard generation ✅ **COMPLETE**
+**Next phase:** Phase 8 — Frontend Hello World (Vite + React + Tailwind)
+**Overall:** 8 / 14 phases complete — BACKEND DONE 🎉
 
 ---
 
@@ -23,7 +23,7 @@ Track the journey. One line per milestone. The past and present of the project.
 - [x] **Phase 4 — Authentication** (manual JWT + bcrypt signup/login/me, requireAuth + requireRole middleware, role-based access, passwordHash hiding via select:false + toJSON transform, 401 vs 403 status codes) ✅
 - [x] **Phase 5 — Core models** (StudyMaterial/Flashcard/StudyPlan/Progress schemas with refs, full CRUD routes scoped to req.user, `.populate()` for joins, ownership filtering pattern, query filters, Progress upsert by unique (user,subject) index) ✅
 - [x] **Phase 6 — File uploads** (Multer disk storage with size + mimetype limits, pdf-parse v2 class API for text extraction, POST /api/materials/upload, sourceFile field, Express 4-arg JSON error handler, pdfkit for test PDF generation) ✅
-- [ ] **Phase 7 — Flashcard generation** (heuristic rules: text → Q&A)
+- [x] **Phase 7 — Flashcard generation** (pure-function service, pattern matching for "X is Y" / "X are Y" / "X means Y" / "X: Y", auto-gen on upload + manual regenerate endpoint with ?replace, difficulty inferred from answer length, stopword filter) ✅
 - [ ] **Phase 8 — Frontend Hello World** (Vite + React + Tailwind)
 - [ ] **Phase 9 — Frontend auth + routing** (React Router, protected routes)
 - [ ] **Phase 10 — Frontend features** (dashboard, upload, study, plan, progress)

@@ -4,6 +4,7 @@
 
 import "dotenv/config"; // load .env BEFORE anything else
 import express from "express";
+import cors from "cors";
 import { connectDB } from "./config/db.js";
 import usersRouter from "./routes/users.js";
 import authRouter from "./routes/auth.js";
@@ -16,6 +17,12 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // ---------- Middleware ----------
+app.use(
+  cors({
+    origin: process.env.CLIENT_ORIGIN || "http://localhost:5173",
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 app.use((req, res, next) => {
