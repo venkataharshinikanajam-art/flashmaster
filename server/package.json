@@ -1,0 +1,18 @@
+{
+  "name": "flashmaster-server",
+  "version": "0.1.0",
+  "description": "FLASHMASTER backend — Express API",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
