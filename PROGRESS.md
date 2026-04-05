@@ -8,9 +8,9 @@ Track the journey. One line per milestone. The past and present of the project.
 
 ## Current status
 
-**Current phase:** Phase 1 — JavaScript Crash Course ✅ **COMPLETE**
-**Next phase:** Phase 2 — Backend Hello World (Express) — ready to start
-**Overall:** 2 / 14 phases complete
+**Current phase:** Phase 2 — Backend Hello World ✅ **COMPLETE**
+**Next phase:** Phase 3 — Database basics (MongoDB + Mongoose + User CRUD)
+**Overall:** 3 / 14 phases complete
 
 ---
 
@@ -18,7 +18,7 @@ Track the journey. One line per milestone. The past and present of the project.
 
 - [x] **Phase 0 — Foundations** (setup, terminal, git, full-stack concepts) ✅
 - [x] **Phase 1 — JavaScript crash course** (condensed — variables, functions, objects, arrays, destructuring, spread, map/filter/reduce, async/await) ✅
-- [ ] **Phase 2 — Backend Hello World** (Express, routes, middleware)
+- [x] **Phase 2 — Backend Hello World** (Express 5, routes, middleware, req/res, JSON, URL params, 404 catch-all) ✅
 - [ ] **Phase 3 — Database basics** (MongoDB + Mongoose, User CRUD)
 - [ ] **Phase 4 — Authentication** (manual JWT + bcrypt, protected routes, roles)
 - [ ] **Phase 5 — Core models** (StudyMaterial, Flashcard, StudyPlan, Progress)
