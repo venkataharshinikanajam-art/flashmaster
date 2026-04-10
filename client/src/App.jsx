@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 import Materials from "./pages/Materials.jsx";
 import Flashcards from "./pages/Flashcards.jsx";
 import Plans from "./pages/Plans.jsx";
+import Progress from "./pages/Progress.jsx";
 import Admin from "./pages/Admin.jsx";
 
 export default function App() {
@@ -50,6 +51,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <Plans />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/progress"
+              element={
+                <ProtectedRoute>
+                  <Progress />
                 </ProtectedRoute>
               }
             />
