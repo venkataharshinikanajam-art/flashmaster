@@ -24,6 +24,7 @@ export default function Navbar() {
               <Link to="/flashcards" className="text-slate-300 hover:text-white">Flashcards</Link>
               <Link to="/plans" className="text-slate-300 hover:text-white">Plans</Link>
               <Link to="/progress" className="text-slate-300 hover:text-white">Progress</Link>
+              <Link to="/analytics" className="text-slate-300 hover:text-white">Analytics</Link>
               {user.role === "admin" && (
                 <Link to="/admin" className="text-amber-300 hover:text-amber-200">Admin</Link>
               )}
