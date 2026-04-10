@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/auth.jsx";
+import NotificationBell from "./NotificationBell.jsx";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -28,6 +29,7 @@ export default function Navbar() {
               {user.role === "admin" && (
                 <Link to="/admin" className="text-amber-300 hover:text-amber-200">Admin</Link>
               )}
+              <NotificationBell />
               <span className="text-slate-500">|</span>
               <span className="text-slate-400">{user.name}</span>
               <button

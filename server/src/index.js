@@ -12,6 +12,7 @@ import materialsRouter from "./routes/materials.js";
 import flashcardsRouter from "./routes/flashcards.js";
 import plansRouter from "./routes/plans.js";
 import progressRouter from "./routes/progress.js";
+import notificationsRouter from "./routes/notifications.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -19,7 +20,11 @@ const PORT = process.env.PORT || 5000;
 // ---------- Middleware ----------
 app.use(
   cors({
-    origin: process.env.CLIENT_ORIGIN || "http://localhost:5173",
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "http://localhost:5175",
+    ],
     credentials: true,
   })
 );
@@ -49,6 +54,7 @@ app.use("/api/materials", materialsRouter);
 app.use("/api/flashcards", flashcardsRouter);
 app.use("/api/plans", plansRouter);
 app.use("/api/progress", progressRouter);
+app.use("/api/notifications", notificationsRouter);
 
 // 404 catch-all
 app.use((req, res) => {
