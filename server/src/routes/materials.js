@@ -4,8 +4,6 @@
 // ===================================================================
 
 import { Router } from "express";
-import fs from "node:fs/promises";
-import path from "node:path";
 import { StudyMaterial } from "../models/StudyMaterial.js";
 import { Flashcard } from "../models/Flashcard.js";
 import { requireAuth } from "../middleware/auth.js";
@@ -50,13 +48,11 @@ router.post("/upload", upload.single("file"), async (req, res) => {
     if (!req.file) return res.status(400).json({ error: "file field is required" });
     const { title, subject } = req.body;
     if (!title || !subject) {
-      // Clean up the uploaded file if metadata is missing.
-      await fs.unlink(req.file.path).catch(() => {});
       return res.status(400).json({ error: "title and subject are required" });
     }
 
-    // Read the file and extract text based on its type.
-    const buffer = await fs.readFile(req.file.path);
+    // With memory storage, the file bytes live at req.file.buffer.
+    const buffer = req.file.buffer;
     let content = "";
     if (req.file.mimetype === "application/pdf") {
       const parser = new PDFParse({ data: buffer });
@@ -79,7 +75,7 @@ router.post("/upload", upload.single("file"), async (req, res) => {
       title,
       subject,
       content,
-      sourceFile: path.basename(req.file.path),
+      sourceFile: req.file.originalname,
     });
 
     // Auto-generate flashcards from the extracted text (Ollama if available, else heuristic).
@@ -105,8 +101,6 @@ router.post("/upload", upload.single("file"), async (req, res) => {
       },
     });
   } catch (err) {
-    // Clean up on failure.
-    if (req.file) await fs.unlink(req.file.path).catch(() => {});
     res.status(400).json({ error: err.message });
   }
 });

@@ -18,13 +18,27 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // ---------- Middleware ----------
+// CORS — allow local dev ports plus any production client URL set via env var.
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://localhost:5175",
+];
+if (process.env.CLIENT_ORIGIN) {
+  // Comma-separated list supported, e.g. "https://foo.vercel.app,https://bar.vercel.app"
+  process.env.CLIENT_ORIGIN.split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .forEach((origin) => allowedOrigins.push(origin));
+}
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "http://localhost:5174",
-      "http://localhost:5175",
-    ],
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g. curl, Postman, health checks)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error(`Origin ${origin} not allowed by CORS`));
+    },
     credentials: true,
   })
 );
