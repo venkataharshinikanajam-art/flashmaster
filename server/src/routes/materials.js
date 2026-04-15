@@ -46,7 +46,7 @@ router.post("/", async (req, res) => {
 router.post("/upload", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "file field is required" });
-    const { title, subject } = req.body;
+    const { title, subject, topic = "" } = req.body;
     if (!title || !subject) {
       return res.status(400).json({ error: "title and subject are required" });
     }
@@ -74,6 +74,7 @@ router.post("/upload", upload.single("file"), async (req, res) => {
       userId: req.user._id,
       title,
       subject,
+      topic,
       content,
       sourceFile: req.file.originalname,
     });
@@ -86,6 +87,7 @@ router.post("/upload", upload.single("file"), async (req, res) => {
         userId: req.user._id,
         materialId: material._id,
         subject,
+        topic,
       }))
     );
 
@@ -105,9 +107,13 @@ router.post("/upload", upload.single("file"), async (req, res) => {
   }
 });
 
-// LIST (only the current user's)
+// LIST (only the current user's) — optional ?subject= and ?topic= filters
 router.get("/", async (req, res) => {
-  const materials = await StudyMaterial.find({ userId: req.user._id }).sort({ createdAt: -1 });
+  const { subject, topic } = req.query;
+  const filter = { userId: req.user._id };
+  if (subject) filter.subject = subject;
+  if (topic) filter.topic = topic;
+  const materials = await StudyMaterial.find(filter).sort({ createdAt: -1 });
   res.json(materials);
 });
 
@@ -155,6 +161,7 @@ router.post("/:id/generate-flashcards", async (req, res) => {
         userId: req.user._id,
         materialId: material._id,
         subject: material.subject,
+        topic: material.topic || "",
       }))
     );
 

@@ -13,6 +13,7 @@ import flashcardsRouter from "./routes/flashcards.js";
 import plansRouter from "./routes/plans.js";
 import progressRouter from "./routes/progress.js";
 import notificationsRouter from "./routes/notifications.js";
+import adminRouter from "./routes/admin.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -69,6 +70,7 @@ app.use("/api/flashcards", flashcardsRouter);
 app.use("/api/plans", plansRouter);
 app.use("/api/progress", progressRouter);
 app.use("/api/notifications", notificationsRouter);
+app.use("/api/admin", adminRouter);
 
 // 404 catch-all
 app.use((req, res) => {

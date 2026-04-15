@@ -83,3 +83,18 @@ Covered in a condensed, read-and-watch format (per Harsh's pacing preference):
 ---
 
 *(Future phases will be appended here as we reach them.)*
+
+---
+
+## Post-phase: Spec gap fixes (2026-04-15)
+
+Audited the implementation against `FLASHMASTER – Exam Helper App.docx` Section 10 (12 required features) and Section 13 (Roles). Two gaps found and closed:
+
+1. **Topic-wise organization (Section 10 #4):** added optional `topic` field on `StudyMaterial` and `Flashcard` models. Upload form accepts topic. Generated flashcards inherit the material's topic. Materials list and Flashcards list both have subject + topic filter chips. Backend list routes accept `?subject=` and `?topic=` query filters.
+2. **Admin — manage uploaded content + reports (Section 13):** new `/api/admin` router (auth + role-gated) with three endpoints:
+   - `GET /api/admin/materials` — every user's uploads, owner populated
+   - `DELETE /api/admin/materials/:id` — admin can remove any upload (also cascades flashcards)
+   - `GET /api/admin/stats` — platform-wide counts (users/students/admins, materials, flashcards, hard-card count, plans, recent uploads)
+   - Admin dashboard UI rewritten with three tabs: **Users / Materials / Reports**.
+
+All 12 required features from Section 10 are now fully implemented. Optional features in Section 11 remain deliberately unbuilt.

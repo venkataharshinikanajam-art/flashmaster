@@ -10,7 +10,12 @@ export default function Materials() {
   const [file, setFile] = useState(null);
   const [title, setTitle] = useState("");
   const [subject, setSubject] = useState("");
+  const [topic, setTopic] = useState("");
   const [uploading, setUploading] = useState(false);
+
+  // Filter state
+  const [subjectFilter, setSubjectFilter] = useState("all");
+  const [topicFilter, setTopicFilter] = useState("all");
 
   const load = () => {
     setLoading(true);
@@ -33,10 +38,12 @@ export default function Materials() {
       fd.append("file", file);
       fd.append("title", title);
       fd.append("subject", subject);
+      if (topic) fd.append("topic", topic);
       const result = await api.upload("/api/materials/upload", fd);
       setFile(null);
       setTitle("");
       setSubject("");
+      setTopic("");
       // Reset file input visually
       document.getElementById("file-input").value = "";
       load();
@@ -70,7 +77,7 @@ export default function Materials() {
         onSubmit={handleUpload}
         className="mt-8 rounded-xl border border-slate-800 bg-slate-900/50 p-6 space-y-4"
       >
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-3 gap-4">
           <label className="block">
             <div className="text-sm text-slate-300">Title</div>
             <input
@@ -89,6 +96,18 @@ export default function Materials() {
               onChange={(e) => setSubject(e.target.value)}
               required
               placeholder="DSA, DBMS, OS…"
+              className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-white focus:border-indigo-500 focus:outline-none"
+            />
+          </label>
+          <label className="block">
+            <div className="text-sm text-slate-300">
+              Topic <span className="text-slate-500">(optional)</span>
+            </div>
+            <input
+              type="text"
+              value={topic}
+              onChange={(e) => setTopic(e.target.value)}
+              placeholder="Linked Lists, Joins…"
               className="mt-1 w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-white focus:border-indigo-500 focus:outline-none"
             />
           </label>
@@ -119,13 +138,70 @@ export default function Materials() {
       </form>
 
       <h2 className="mt-10 text-xl font-semibold text-white">Your materials</h2>
+
+      {materials.length > 0 && (() => {
+        const subjects = ["all", ...Array.from(new Set(materials.map((m) => m.subject).filter(Boolean)))];
+        const topics = ["all", ...Array.from(new Set(materials.map((m) => m.topic).filter(Boolean)))];
+        return (
+          <div className="mt-4 flex flex-wrap gap-4">
+            <div>
+              <div className="text-xs uppercase text-slate-500 mb-1">Subject</div>
+              <div className="flex flex-wrap gap-2">
+                {subjects.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setSubjectFilter(s)}
+                    className={`rounded-full px-3 py-1 text-xs border ${
+                      subjectFilter === s
+                        ? "border-indigo-500 bg-indigo-500/20 text-indigo-200"
+                        : "border-slate-700 text-slate-400 hover:border-slate-500"
+                    }`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {topics.length > 1 && (
+              <div>
+                <div className="text-xs uppercase text-slate-500 mb-1">Topic</div>
+                <div className="flex flex-wrap gap-2">
+                  {topics.map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => setTopicFilter(t)}
+                      className={`rounded-full px-3 py-1 text-xs border ${
+                        topicFilter === t
+                          ? "border-indigo-500 bg-indigo-500/20 text-indigo-200"
+                          : "border-slate-700 text-slate-400 hover:border-slate-500"
+                      }`}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
       {loading ? (
         <p className="mt-4 text-slate-400">Loading…</p>
       ) : materials.length === 0 ? (
         <p className="mt-4 text-slate-400">No materials yet. Upload one above.</p>
-      ) : (
+      ) : (() => {
+        const visible = materials.filter((m) => {
+          if (subjectFilter !== "all" && m.subject !== subjectFilter) return false;
+          if (topicFilter !== "all" && m.topic !== topicFilter) return false;
+          return true;
+        });
+        if (visible.length === 0) {
+          return <p className="mt-4 text-slate-400">No materials match those filters.</p>;
+        }
+        return (
         <div className="mt-4 space-y-3">
-          {materials.map((m) => (
+          {visible.map((m) => (
             <div
               key={m._id}
               className="rounded-lg border border-slate-800 bg-slate-900/50 p-4 flex items-start justify-between gap-4"
@@ -133,7 +209,9 @@ export default function Materials() {
               <div className="min-w-0 flex-1">
                 <div className="font-semibold text-white">{m.title}</div>
                 <div className="text-sm text-slate-400">
-                  {m.subject} · {new Date(m.createdAt).toLocaleDateString()}
+                  {m.subject}
+                  {m.topic && <> · <span className="text-indigo-300">{m.topic}</span></>}
+                  {" · "}{new Date(m.createdAt).toLocaleDateString()}
                   {m.sourceFile && <> · 📎 {m.sourceFile}</>}
                 </div>
                 <div className="mt-2 text-sm text-slate-300 line-clamp-2">{m.content}</div>
@@ -155,7 +233,8 @@ export default function Materials() {
             </div>
           ))}
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

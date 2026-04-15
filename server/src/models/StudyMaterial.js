@@ -25,6 +25,12 @@ const studyMaterialSchema = new mongoose.Schema(
       trim: true,
       maxlength: 80,
     },
+    topic: {
+      type: String,
+      trim: true,
+      maxlength: 80,
+      default: "",
+    },
     content: {
       type: String,
       required: [true, "Content is required"],

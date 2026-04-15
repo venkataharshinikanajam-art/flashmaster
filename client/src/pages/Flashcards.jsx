@@ -11,6 +11,8 @@ export default function Flashcards() {
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
+  const [subjectFilter, setSubjectFilter] = useState("all");
+  const [topicFilter, setTopicFilter] = useState("all");
   const [studyMode, setStudyMode] = useState(false);
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -22,7 +24,15 @@ export default function Flashcards() {
 
   useEffect(load, []);
 
-  const filtered = cards.filter((c) => filter === "all" || c.difficulty === filter);
+  const subjects = ["all", ...Array.from(new Set(cards.map((c) => c.subject).filter(Boolean)))];
+  const topics = ["all", ...Array.from(new Set(cards.map((c) => c.topic).filter(Boolean)))];
+
+  const filtered = cards.filter((c) => {
+    if (filter !== "all" && c.difficulty !== filter) return false;
+    if (subjectFilter !== "all" && c.subject !== subjectFilter) return false;
+    if (topicFilter !== "all" && c.topic !== topicFilter) return false;
+    return true;
+  });
 
   const updateDifficulty = async (id, difficulty) => {
     await api.patch(`/api/flashcards/${id}`, { difficulty });
@@ -123,20 +133,65 @@ export default function Flashcards() {
         )}
       </div>
 
-      <div className="mt-6 flex gap-2">
-        {["all", "easy", "medium", "hard"].map((d) => (
-          <button
-            key={d}
-            onClick={() => setFilter(d)}
-            className={`rounded-full px-4 py-1.5 text-sm border ${
-              filter === d
-                ? "border-indigo-500 bg-indigo-500/20 text-indigo-200"
-                : "border-slate-700 text-slate-400 hover:border-slate-500"
-            }`}
-          >
-            {d}
-          </button>
-        ))}
+      <div className="mt-6 space-y-3">
+        <div>
+          <div className="text-xs uppercase text-slate-500 mb-1">Difficulty</div>
+          <div className="flex flex-wrap gap-2">
+            {["all", "easy", "medium", "hard"].map((d) => (
+              <button
+                key={d}
+                onClick={() => setFilter(d)}
+                className={`rounded-full px-4 py-1.5 text-sm border ${
+                  filter === d
+                    ? "border-indigo-500 bg-indigo-500/20 text-indigo-200"
+                    : "border-slate-700 text-slate-400 hover:border-slate-500"
+                }`}
+              >
+                {d}
+              </button>
+            ))}
+          </div>
+        </div>
+        {subjects.length > 1 && (
+          <div>
+            <div className="text-xs uppercase text-slate-500 mb-1">Subject</div>
+            <div className="flex flex-wrap gap-2">
+              {subjects.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setSubjectFilter(s)}
+                  className={`rounded-full px-4 py-1.5 text-sm border ${
+                    subjectFilter === s
+                      ? "border-indigo-500 bg-indigo-500/20 text-indigo-200"
+                      : "border-slate-700 text-slate-400 hover:border-slate-500"
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        {topics.length > 1 && (
+          <div>
+            <div className="text-xs uppercase text-slate-500 mb-1">Topic</div>
+            <div className="flex flex-wrap gap-2">
+              {topics.map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setTopicFilter(t)}
+                  className={`rounded-full px-4 py-1.5 text-sm border ${
+                    topicFilter === t
+                      ? "border-indigo-500 bg-indigo-500/20 text-indigo-200"
+                      : "border-slate-700 text-slate-400 hover:border-slate-500"
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {loading ? (
@@ -153,7 +208,10 @@ export default function Flashcards() {
               className="rounded-lg border border-slate-800 bg-slate-900/50 p-5"
             >
               <div className="flex items-start justify-between gap-2">
-                <div className="text-xs text-slate-500">{c.subject}</div>
+                <div className="text-xs text-slate-500">
+                  {c.subject}
+                  {c.topic && <> · <span className="text-indigo-300">{c.topic}</span></>}
+                </div>
                 <span
                   className={`text-xs border rounded-full px-2 py-0.5 ${DIFFICULTY_COLORS[c.difficulty]}`}
                 >

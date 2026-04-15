@@ -24,10 +24,12 @@ router.post("/", async (req, res) => {
 
 // LIST with optional filters
 router.get("/", async (req, res) => {
-  const { materialId, difficulty, populate } = req.query;
+  const { materialId, difficulty, subject, topic, populate } = req.query;
   const filter = { userId: req.user._id };
   if (materialId) filter.materialId = materialId;
   if (difficulty) filter.difficulty = difficulty;
+  if (subject) filter.subject = subject;
+  if (topic) filter.topic = topic;
 
   let query = Flashcard.find(filter).sort({ createdAt: -1 });
   if (populate === "material") query = query.populate("materialId", "title subject");

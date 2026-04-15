@@ -23,6 +23,11 @@ const flashcardSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    topic: {
+      type: String,
+      trim: true,
+      default: "",
+    },
     question: {
       type: String,
       required: [true, "Question is required"],
