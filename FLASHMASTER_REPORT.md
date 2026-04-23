@@ -613,11 +613,11 @@ client/
 
 ## Project Overview Video
 
-[Watch the FLASHMASTER project overview video](https://PASTE-YOUR-OVERVIEW-VIDEO-LINK-HERE)
+[Watch the FLASHMASTER project overview video on Google Drive](https://drive.google.com/file/d/13laCkmfLTP5Do-R4tMpo0vT3qxWe7One/view?usp=sharing)
 
 ## Code Explanation Video
 
-[Watch the FLASHMASTER code explanation video](https://PASTE-YOUR-CODE-EXPLANATION-VIDEO-LINK-HERE)
+[Watch the FLASHMASTER code explanation video on Google Drive](https://drive.google.com/file/d/193JGzvS2ED0ILRLsKOAN6gDrgnrdhGzX/view?usp=drive_link)
 
 ## GitHub Repository
 
