@@ -6,18 +6,19 @@ import { requireAuth } from "../middleware/auth.js";
 const router = Router();
 router.use(requireAuth);
 
-router.get("/", async (req, res) => {
+// GET /api/notifications - computes notifications from the user's plans and cards.
+router.get("/", async function (req, res) {
   try {
     const userId = req.user._id;
-    const plans = await StudyPlan.find({ userId });
-    const flashcards = await Flashcard.find({ userId });
+    const plans = await StudyPlan.find({ userId: userId });
+    const flashcards = await Flashcard.find({ userId: userId });
 
     const notifications = [];
     const todayStr = new Date().toISOString().split("T")[0];
     const now = new Date();
     now.setHours(0, 0, 0, 0);
 
-    // Welcome: if user has no plans AND no flashcards
+    // Welcome: if the user has no plans AND no flashcards.
     if (plans.length === 0 && flashcards.length === 0) {
       notifications.push({
         id: "welcome",
@@ -29,120 +30,170 @@ router.get("/", async (req, res) => {
       });
     }
 
-    // Exam-soon alerts (within 7 days)
-    plans.forEach((p) => {
+    // Exam-soon alerts (within 7 days).
+    for (let i = 0; i < plans.length; i++) {
+      const p = plans[i];
       const examDate = new Date(p.examDate);
       examDate.setHours(0, 0, 0, 0);
       const daysUntil = Math.ceil((examDate - now) / (1000 * 60 * 60 * 24));
 
       if (daysUntil >= 0 && daysUntil <= 7) {
-        const urgency = daysUntil <= 2 ? "high" : daysUntil <= 5 ? "medium" : "low";
+        let urgency = "low";
+        if (daysUntil <= 2) urgency = "high";
+        else if (daysUntil <= 5) urgency = "medium";
+
         let title;
-        if (daysUntil === 0) title = `${p.subject} exam is TODAY!`;
-        else if (daysUntil === 1) title = `${p.subject} exam is TOMORROW!`;
-        else title = `${p.subject} exam in ${daysUntil} days`;
+        if (daysUntil === 0) {
+          title = p.subject + " exam is TODAY!";
+        } else if (daysUntil === 1) {
+          title = p.subject + " exam is TOMORROW!";
+        } else {
+          title = p.subject + " exam in " + daysUntil + " days";
+        }
+
+        let topicCount = 0;
+        if (p.topics) topicCount = p.topics.length;
 
         notifications.push({
-          id: `exam-${p._id}`,
+          id: "exam-" + p._id,
           type: "exam_soon",
-          title,
-          message: `Stay focused - you have ${p.topics?.length || 0} topics to cover.`,
+          title: title,
+          message: "Stay focused - you have " + topicCount + " topics to cover.",
           priority: urgency,
           createdAt: new Date().toISOString(),
         });
       }
-    });
+    }
 
-    // Today's study reminders
-    plans.forEach((p) => {
-      const todayEntry = p.schedule?.find((d) => d.date === todayStr);
+    // Today's study reminders.
+    for (let i = 0; i < plans.length; i++) {
+      const p = plans[i];
+      if (!p.schedule) continue;
+
+      let todayEntry = null;
+      for (let j = 0; j < p.schedule.length; j++) {
+        if (p.schedule[j].date === todayStr) {
+          todayEntry = p.schedule[j];
+          break;
+        }
+      }
+
       if (todayEntry && !todayEntry.completed) {
+        let topicsText = "Review time";
+        if (todayEntry.topics && todayEntry.topics.length > 0) {
+          topicsText = todayEntry.topics.join(", ");
+        }
         notifications.push({
-          id: `today-${p._id}`,
+          id: "today-" + p._id,
           type: "study_today",
-          title: `Today: ${p.subject}`,
-          message: `${todayEntry.topics?.join(", ") || "Review time"} (${todayEntry.hours}h planned)`,
+          title: "Today: " + p.subject,
+          message: topicsText + " (" + todayEntry.hours + "h planned)",
           priority: "medium",
           createdAt: new Date().toISOString(),
         });
       }
-    });
+    }
 
-    // Overdue days (past dates not completed)
-    plans.forEach((p) => {
-      const overdueCount =
-        p.schedule?.filter((d) => {
-          const dayDate = new Date(d.date);
-          dayDate.setHours(0, 0, 0, 0);
-          return dayDate < now && !d.completed;
-        }).length || 0;
+    // Overdue days (past dates not completed).
+    for (let i = 0; i < plans.length; i++) {
+      const p = plans[i];
+      if (!p.schedule) continue;
+
+      let overdueCount = 0;
+      for (let j = 0; j < p.schedule.length; j++) {
+        const dayDate = new Date(p.schedule[j].date);
+        dayDate.setHours(0, 0, 0, 0);
+        if (dayDate < now && !p.schedule[j].completed) {
+          overdueCount++;
+        }
+      }
 
       if (overdueCount > 0) {
+        let dayWord = "day";
+        if (overdueCount > 1) dayWord = "days";
         notifications.push({
-          id: `overdue-${p._id}`,
+          id: "overdue-" + p._id,
           type: "overdue",
-          title: `${overdueCount} overdue day${overdueCount > 1 ? "s" : ""} in ${p.subject}`,
+          title: overdueCount + " overdue " + dayWord + " in " + p.subject,
           message: "Catch up to stay on track with your study plan.",
           priority: "high",
           createdAt: new Date().toISOString(),
         });
       }
-    });
+    }
 
-    // Milestone notifications (50%, 75%, 100% complete)
-    plans.forEach((p) => {
-      if (!p.schedule || p.schedule.length === 0) return;
-      const completed = p.schedule.filter((d) => d.completed).length;
+    // Milestone notifications (50%, 75%, 100% complete).
+    for (let i = 0; i < plans.length; i++) {
+      const p = plans[i];
+      if (!p.schedule || p.schedule.length === 0) continue;
+
+      let completed = 0;
+      for (let j = 0; j < p.schedule.length; j++) {
+        if (p.schedule[j].completed) completed++;
+      }
       const total = p.schedule.length;
       const percent = Math.round((completed / total) * 100);
 
       if (percent === 100) {
         notifications.push({
-          id: `milestone-100-${p._id}`,
+          id: "milestone-100-" + p._id,
           type: "milestone",
-          title: `${p.subject} plan complete!`,
+          title: p.subject + " plan complete!",
           message: "Amazing work - you finished all study days.",
           priority: "info",
           createdAt: new Date().toISOString(),
         });
       } else if (percent >= 75) {
         notifications.push({
-          id: `milestone-75-${p._id}`,
+          id: "milestone-75-" + p._id,
           type: "milestone",
-          title: `${p.subject}: 75% complete`,
+          title: p.subject + ": 75% complete",
           message: "You are on the home stretch!",
           priority: "info",
           createdAt: new Date().toISOString(),
         });
       } else if (percent >= 50) {
         notifications.push({
-          id: `milestone-50-${p._id}`,
+          id: "milestone-50-" + p._id,
           type: "milestone",
-          title: `${p.subject}: halfway there`,
+          title: p.subject + ": halfway there",
           message: "Keep the momentum going.",
           priority: "info",
           createdAt: new Date().toISOString(),
         });
       }
-    });
+    }
 
-    // Hard-cards weak area reminder
-    const hardCards = flashcards.filter((f) => f.difficulty === "hard");
+    // Hard-cards weak area reminder.
+    const hardCards = [];
+    for (let i = 0; i < flashcards.length; i++) {
+      if (flashcards[i].difficulty === "hard") {
+        hardCards.push(flashcards[i]);
+      }
+    }
     if (hardCards.length >= 5) {
-      const hardSubjects = [...new Set(hardCards.map((f) => f.subject))];
+      const hardSubjects = [];
+      for (let i = 0; i < hardCards.length; i++) {
+        const sub = hardCards[i].subject;
+        if (sub && hardSubjects.indexOf(sub) === -1) {
+          hardSubjects.push(sub);
+        }
+      }
       notifications.push({
         id: "weak-areas",
         type: "weak_areas",
-        title: `${hardCards.length} hard flashcards need review`,
-        message: `Focus on: ${hardSubjects.slice(0, 3).join(", ")}`,
+        title: hardCards.length + " hard flashcards need review",
+        message: "Focus on: " + hardSubjects.slice(0, 3).join(", "),
         priority: "medium",
         createdAt: new Date().toISOString(),
       });
     }
 
-    // Sort by priority: high > medium > low > info
+    // Sort so urgent items come first.
     const priorityRank = { high: 0, medium: 1, low: 2, info: 3 };
-    notifications.sort((a, b) => priorityRank[a.priority] - priorityRank[b.priority]);
+    notifications.sort(function (a, b) {
+      return priorityRank[a.priority] - priorityRank[b.priority];
+    });
 
     res.json(notifications);
   } catch (err) {

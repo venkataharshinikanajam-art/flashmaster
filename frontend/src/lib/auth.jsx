@@ -1,56 +1,78 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { api, setToken } from "./api.js";
 
+// Context is React's built-in way to share data without passing it through
+// every component as a prop. We wrap the whole app in <AuthProvider> and
+// then any page can call useAuth() to read the user and login/logout functions.
 const AuthContext = createContext(null);
 
-export const AuthProvider = ({ children }) => {
+export function AuthProvider(props) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  // On first load, if a token exists, fetch the user from the server.
+  useEffect(function () {
     const token = localStorage.getItem("flashmaster_token");
     if (!token) {
       setLoading(false);
       return;
     }
-    api
-      .get("/api/auth/me")
-      .then((data) => setUser(data.user))
-      .catch(() => {
+    api.get("/api/auth/me")
+      .then(function (data) {
+        setUser(data.user);
+      })
+      .catch(function () {
+        // Token was invalid or expired. Clear it.
         setToken(null);
         setUser(null);
       })
-      .finally(() => setLoading(false));
+      .finally(function () {
+        setLoading(false);
+      });
   }, []);
 
-  const login = async (email, password) => {
-    const { user, token } = await api.post("/api/auth/login", { email, password });
-    setToken(token);
-    setUser(user);
-    return user;
-  };
+  async function login(email, password) {
+    const response = await api.post("/api/auth/login", {
+      email: email,
+      password: password,
+    });
+    setToken(response.token);
+    setUser(response.user);
+    return response.user;
+  }
 
-  const signup = async (payload) => {
-    const { user, token } = await api.post("/api/auth/signup", payload);
-    setToken(token);
-    setUser(user);
-    return user;
-  };
+  async function signup(payload) {
+    const response = await api.post("/api/auth/signup", payload);
+    setToken(response.token);
+    setUser(response.user);
+    return response.user;
+  }
 
-  const logout = () => {
+  function logout() {
     setToken(null);
     setUser(null);
+  }
+
+  const value = {
+    user: user,
+    loading: loading,
+    login: login,
+    signup: signup,
+    logout: logout,
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout }}>
-      {children}
+    <AuthContext.Provider value={value}>
+      {props.children}
     </AuthContext.Provider>
   );
-};
+}
 
-export const useAuth = () => {
+// Small helper so pages can just call useAuth() instead of useContext(AuthContext).
+export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used inside <AuthProvider>");
+  if (!ctx) {
+    throw new Error("useAuth must be used inside <AuthProvider>");
+  }
   return ctx;
-};
+}

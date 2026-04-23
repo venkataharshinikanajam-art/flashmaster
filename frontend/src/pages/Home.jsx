@@ -2,7 +2,9 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../lib/auth.jsx";
 
 export default function Home() {
-  const { user } = useAuth();
+  const auth = useAuth();
+  const user = auth.user;
+
   return (
     <div className="max-w-4xl mx-auto px-6 py-20 text-center">
       <h1 className="text-5xl md:text-6xl font-bold text-white tracking-tight">
@@ -39,19 +41,28 @@ export default function Home() {
       </div>
 
       <div className="mt-20 grid md:grid-cols-3 gap-6 text-left">
-        <Feature title="Upload" text="Drop a PDF or paste text. We extract and organize." />
-        <Feature title="Auto-generate" text="Heuristic + local AI turn content into Q&A cards." />
-        <Feature title="Track" text="See what's mastered, what needs review, what's due." />
+        <FeatureCard
+          title="Upload"
+          text="Drop a PDF or paste text. We extract and organize."
+        />
+        <FeatureCard
+          title="Auto-generate"
+          text="Heuristic + local AI turn content into Q&A cards."
+        />
+        <FeatureCard
+          title="Track"
+          text="See what's mastered, what needs review, what's due."
+        />
       </div>
     </div>
   );
 }
 
-function Feature({ title, text }) {
+function FeatureCard(props) {
   return (
     <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-6">
-      <div className="text-lg font-semibold text-white">{title}</div>
-      <div className="mt-2 text-slate-400">{text}</div>
+      <div className="text-lg font-semibold text-white">{props.title}</div>
+      <div className="mt-2 text-slate-400">{props.text}</div>
     </div>
   );
 }

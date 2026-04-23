@@ -1,8 +1,11 @@
 import { useEffect, useState, useRef } from "react";
 import { api } from "../lib/api.js";
 
+// The localStorage key where we keep the list of notification IDs the user
+// has already dismissed.
 const READ_KEY = "flashmaster_read_notifications";
 
+// Tailwind classes for each priority level.
 const PRIORITY_STYLES = {
   high: "border-red-800 bg-red-950/40",
   medium: "border-amber-800 bg-amber-950/40",
@@ -13,57 +16,82 @@ const PRIORITY_STYLES = {
 export default function NotificationBell() {
   const [notifications, setNotifications] = useState([]);
   const [open, setOpen] = useState(false);
-  const [readIds, setReadIds] = useState(() => getReadIds());
+  const [readIds, setReadIds] = useState(getReadIds());
   const dropdownRef = useRef(null);
 
-  const load = () => {
-    api
-      .get("/api/notifications")
-      .then(setNotifications)
-      .catch(() => setNotifications([]));
-  };
+  // Load notifications from the backend.
+  function load() {
+    api.get("/api/notifications")
+      .then(function (data) {
+        setNotifications(data);
+      })
+      .catch(function () {
+        setNotifications([]);
+      });
+  }
 
-  useEffect(() => {
+  // On mount: load once, then refresh every minute.
+  useEffect(function () {
     load();
-    const interval = setInterval(load, 60000); // refresh every minute
-    return () => clearInterval(interval);
+    const interval = setInterval(load, 60000);
+    return function cleanup() {
+      clearInterval(interval);
+    };
   }, []);
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClick = (e) => {
+  // When the dropdown is open, close it if the user clicks outside of it.
+  useEffect(function () {
+    function handleClick(e) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setOpen(false);
       }
+    }
+    if (open) {
+      document.addEventListener("mousedown", handleClick);
+    }
+    return function cleanup() {
+      document.removeEventListener("mousedown", handleClick);
     };
-    if (open) document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
   }, [open]);
 
-  const unreadCount = notifications.filter((n) => !readIds.has(n.id)).length;
+  // Count how many notifications the user has NOT read yet.
+  let unreadCount = 0;
+  for (let i = 0; i < notifications.length; i++) {
+    if (!readIds.has(notifications[i].id)) {
+      unreadCount++;
+    }
+  }
 
-  const markRead = (id) => {
+  // Mark one notification as read.
+  function markRead(id) {
     const next = new Set(readIds);
     next.add(id);
     setReadIds(next);
     saveReadIds(next);
-  };
+  }
 
-  const markAllRead = () => {
-    const all = new Set(notifications.map((n) => n.id));
+  // Mark everything as read.
+  function markAllRead() {
+    const all = new Set();
+    for (let i = 0; i < notifications.length; i++) {
+      all.add(notifications[i].id);
+    }
     setReadIds(all);
     saveReadIds(all);
-  };
+  }
 
-  const dismiss = (id, e) => {
+  // Dismiss a single notification (click the x button).
+  function dismiss(id, e) {
     e.stopPropagation();
     markRead(id);
-  };
+  }
 
   return (
     <div className="relative" ref={dropdownRef}>
       <button
-        onClick={() => setOpen(!open)}
+        onClick={function () {
+          setOpen(!open);
+        }}
         className="relative rounded-lg p-2 text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
         aria-label="Notifications"
       >
@@ -108,17 +136,21 @@ export default function NotificationBell() {
                 No notifications yet.
               </div>
             ) : (
-              notifications.map((n) => {
+              notifications.map(function (n) {
                 const isRead = readIds.has(n.id);
+                let cardClass = "px-4 py-3 border-b border-slate-800 last:border-b-0 cursor-pointer hover:bg-slate-800/50 border-l-2 ";
+                if (isRead) {
+                  cardClass += "opacity-60 border-l-transparent";
+                } else {
+                  cardClass += PRIORITY_STYLES[n.priority] || PRIORITY_STYLES.info;
+                }
                 return (
                   <div
                     key={n.id}
-                    onClick={() => markRead(n.id)}
-                    className={`px-4 py-3 border-b border-slate-800 last:border-b-0 cursor-pointer hover:bg-slate-800/50 border-l-2 ${
-                      isRead
-                        ? "opacity-60 border-l-transparent"
-                        : PRIORITY_STYLES[n.priority] || PRIORITY_STYLES.info
-                    }`}
+                    onClick={function () {
+                      markRead(n.id);
+                    }}
+                    className={cardClass}
                   >
                     <div className="flex items-start gap-3">
                       <div className="flex-1 min-w-0">
@@ -131,7 +163,9 @@ export default function NotificationBell() {
                       </div>
                       {!isRead && (
                         <button
-                          onClick={(e) => dismiss(n.id, e)}
+                          onClick={function (e) {
+                            dismiss(n.id, e);
+                          }}
                           className="text-slate-500 hover:text-slate-300 text-sm flex-shrink-0"
                           aria-label="Dismiss"
                         >
@@ -150,19 +184,27 @@ export default function NotificationBell() {
   );
 }
 
+// Read the set of already-dismissed notification IDs from localStorage.
 function getReadIds() {
   try {
     const raw = localStorage.getItem(READ_KEY);
-    return new Set(raw ? JSON.parse(raw) : []);
-  } catch {
+    if (!raw) return new Set();
+    const arr = JSON.parse(raw);
+    return new Set(arr);
+  } catch (err) {
     return new Set();
   }
 }
 
+// Save the set back to localStorage so dismissals persist across refreshes.
 function saveReadIds(ids) {
   try {
-    localStorage.setItem(READ_KEY, JSON.stringify([...ids]));
-  } catch {
-    // ignore localStorage errors
+    const arr = [];
+    ids.forEach(function (id) {
+      arr.push(id);
+    });
+    localStorage.setItem(READ_KEY, JSON.stringify(arr));
+  } catch (err) {
+    // Ignore localStorage errors (e.g. in private browsing).
   }
 }

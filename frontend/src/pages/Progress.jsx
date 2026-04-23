@@ -2,58 +2,103 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../lib/api.js";
 
+// Build an empty subject record.
+function emptySubject(name) {
+  return {
+    name: name,
+    plans: [],
+    totalDays: 0,
+    daysCompleted: 0,
+    totalTopics: 0,
+    flashcardsTotal: 0,
+    flashcardsReviewed: 0,
+    easyCards: 0,
+    mediumCards: 0,
+    hardCards: 0,
+    materialsCount: 0,
+  };
+}
+
 export default function Progress() {
-  const [data, setData] = useState({ plans: [], flashcards: [], materials: [] });
+  const [plans, setPlans] = useState([]);
+  const [flashcards, setFlashcards] = useState([]);
+  const [materials, setMaterials] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    Promise.all([
-      api.get("/api/plans"),
-      api.get("/api/flashcards"),
-      api.get("/api/materials"),
-    ])
-      .then(([plans, flashcards, materials]) =>
-        setData({ plans, flashcards, materials })
-      )
-      .finally(() => setLoading(false));
+  useEffect(function () {
+    async function loadAll() {
+      try {
+        const p = await api.get("/api/plans");
+        setPlans(p);
+        const f = await api.get("/api/flashcards");
+        setFlashcards(f);
+        const m = await api.get("/api/materials");
+        setMaterials(m);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadAll();
   }, []);
 
-  // Group everything by subject
+  // Group the data by subject.
   const subjects = {};
-  data.plans.forEach((p) => {
+
+  for (let i = 0; i < plans.length; i++) {
+    const p = plans[i];
     if (!subjects[p.subject]) subjects[p.subject] = emptySubject(p.subject);
     subjects[p.subject].plans.push(p);
-    subjects[p.subject].totalDays += p.schedule?.length || 0;
-    subjects[p.subject].daysCompleted += p.schedule?.filter((d) => d.completed).length || 0;
-    subjects[p.subject].totalTopics += p.topics?.length || 0;
-  });
-  data.flashcards.forEach((f) => {
-    if (!subjects[f.subject]) subjects[f.subject] = emptySubject(f.subject);
-    subjects[f.subject].flashcardsTotal += 1;
-    if (f.difficulty === "hard") subjects[f.subject].hardCards += 1;
-    if (f.difficulty === "easy") subjects[f.subject].easyCards += 1;
-    if (f.difficulty === "medium") subjects[f.subject].mediumCards += 1;
-    if (f.lastReviewedAt) subjects[f.subject].flashcardsReviewed += 1;
-  });
-  data.materials.forEach((m) => {
-    if (!subjects[m.subject]) subjects[m.subject] = emptySubject(m.subject);
-    subjects[m.subject].materialsCount += 1;
-  });
 
+    let scheduleLen = 0;
+    if (p.schedule) scheduleLen = p.schedule.length;
+    subjects[p.subject].totalDays += scheduleLen;
+
+    let completedLen = 0;
+    if (p.schedule) {
+      for (let j = 0; j < p.schedule.length; j++) {
+        if (p.schedule[j].completed) completedLen++;
+      }
+    }
+    subjects[p.subject].daysCompleted += completedLen;
+
+    let topicsLen = 0;
+    if (p.topics) topicsLen = p.topics.length;
+    subjects[p.subject].totalTopics += topicsLen;
+  }
+
+  for (let i = 0; i < flashcards.length; i++) {
+    const f = flashcards[i];
+    if (!subjects[f.subject]) subjects[f.subject] = emptySubject(f.subject);
+    subjects[f.subject].flashcardsTotal++;
+    if (f.difficulty === "hard") subjects[f.subject].hardCards++;
+    if (f.difficulty === "medium") subjects[f.subject].mediumCards++;
+    if (f.difficulty === "easy") subjects[f.subject].easyCards++;
+    if (f.lastReviewedAt) subjects[f.subject].flashcardsReviewed++;
+  }
+
+  for (let i = 0; i < materials.length; i++) {
+    const m = materials[i];
+    if (!subjects[m.subject]) subjects[m.subject] = emptySubject(m.subject);
+    subjects[m.subject].materialsCount++;
+  }
+
+  // Convert the subjects object into an array for rendering.
   const subjectList = Object.values(subjects);
 
-  // Overall totals
-  const totals = {
-    subjectsCount: subjectList.length,
-    totalDays: subjectList.reduce((s, x) => s + x.totalDays, 0),
-    daysCompleted: subjectList.reduce((s, x) => s + x.daysCompleted, 0),
-    flashcardsTotal: data.flashcards.length,
-    flashcardsReviewed: subjectList.reduce((s, x) => s + x.flashcardsReviewed, 0),
-    materialsCount: data.materials.length,
-  };
-  const overallPercent = totals.totalDays > 0
-    ? Math.round((totals.daysCompleted / totals.totalDays) * 100)
-    : 0;
+  // Compute overall totals by summing each subject.
+  let totalDays = 0;
+  let daysCompleted = 0;
+  let flashcardsReviewed = 0;
+  for (let i = 0; i < subjectList.length; i++) {
+    totalDays += subjectList[i].totalDays;
+    daysCompleted += subjectList[i].daysCompleted;
+    flashcardsReviewed += subjectList[i].flashcardsReviewed;
+  }
+
+  let overallPercent = 0;
+  if (totalDays > 0) {
+    overallPercent = Math.round((daysCompleted / totalDays) * 100);
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-10">
@@ -62,9 +107,9 @@ export default function Progress() {
         See how far along you are in each subject and which areas need more work.
       </p>
 
-      {loading ? (
-        <p className="mt-8 text-slate-400">Loading...</p>
-      ) : subjectList.length === 0 ? (
+      {loading && <p className="mt-8 text-slate-400">Loading...</p>}
+
+      {!loading && subjectList.length === 0 && (
         <div className="mt-8 rounded-xl border border-slate-800 bg-slate-900/50 p-8 text-center">
           <p className="text-slate-300">No progress yet.</p>
           <p className="mt-2 text-sm text-slate-500">
@@ -85,38 +130,38 @@ export default function Progress() {
             </Link>
           </div>
         </div>
-      ) : (
+      )}
+
+      {!loading && subjectList.length > 0 && (
         <>
-          {/* Overall summary */}
           <div className="mt-8 rounded-xl border border-indigo-500/30 bg-gradient-to-br from-slate-900 to-indigo-950/30 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-sm text-slate-400">Overall completion</div>
                 <div className="mt-1 text-4xl font-bold text-white">{overallPercent}%</div>
                 <div className="mt-1 text-sm text-slate-400">
-                  {totals.daysCompleted} of {totals.totalDays} study days completed
+                  {daysCompleted} of {totalDays} study days completed
                 </div>
               </div>
               <div className="text-right text-sm text-slate-400">
-                <div>{totals.subjectsCount} subjects</div>
-                <div>{totals.flashcardsTotal} flashcards</div>
-                <div>{totals.materialsCount} materials</div>
+                <div>{subjectList.length} subjects</div>
+                <div>{flashcards.length} flashcards</div>
+                <div>{materials.length} materials</div>
               </div>
             </div>
             <div className="mt-4 h-3 w-full rounded-full bg-slate-800">
               <div
                 className="h-3 rounded-full bg-indigo-500 transition-all"
-                style={{ width: `${overallPercent}%` }}
+                style={{ width: overallPercent + "%" }}
               />
             </div>
           </div>
 
-          {/* Per-subject breakdown */}
           <h2 className="mt-10 text-lg font-semibold text-white">By Subject</h2>
           <div className="mt-4 space-y-4">
-            {subjectList.map((s) => (
-              <SubjectCard key={s.name} subject={s} />
-            ))}
+            {subjectList.map(function (s) {
+              return <SubjectCard key={s.name} subject={s} />;
+            })}
           </div>
         </>
       )}
@@ -124,26 +169,28 @@ export default function Progress() {
   );
 }
 
-function SubjectCard({ subject }) {
-  const percent = subject.totalDays > 0
-    ? Math.round((subject.daysCompleted / subject.totalDays) * 100)
-    : 0;
+function SubjectCard(props) {
+  const s = props.subject;
 
-  const hardPercent = subject.flashcardsTotal > 0
-    ? Math.round((subject.hardCards / subject.flashcardsTotal) * 100)
-    : 0;
+  let percent = 0;
+  if (s.totalDays > 0) percent = Math.round((s.daysCompleted / s.totalDays) * 100);
 
-  // Weak area signal: if >30% of cards are hard, flag it
+  let hardPercent = 0;
+  if (s.flashcardsTotal > 0) hardPercent = Math.round((s.hardCards / s.flashcardsTotal) * 100);
+
+  // If more than 30% of cards are hard, this subject needs attention.
   const isWeak = hardPercent > 30;
+
+  let planLabel = "plan";
+  if (s.plans.length !== 1) planLabel = "plans";
 
   return (
     <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-5">
       <div className="flex items-start justify-between">
         <div>
-          <div className="text-lg font-semibold text-white">{subject.name}</div>
+          <div className="text-lg font-semibold text-white">{s.name}</div>
           <div className="mt-1 text-sm text-slate-400">
-            {subject.plans.length} plan{subject.plans.length !== 1 && "s"} ·{" "}
-            {subject.totalTopics} topics · {subject.materialsCount} materials
+            {s.plans.length} {planLabel} - {s.totalTopics} topics - {s.materialsCount} materials
           </div>
         </div>
         {isWeak && (
@@ -153,7 +200,6 @@ function SubjectCard({ subject }) {
         )}
       </div>
 
-      {/* Progress bar */}
       <div className="mt-4">
         <div className="flex items-center justify-between text-sm">
           <span className="text-slate-400">Study progress</span>
@@ -162,41 +208,40 @@ function SubjectCard({ subject }) {
         <div className="mt-2 h-2 w-full rounded-full bg-slate-800">
           <div
             className="h-2 rounded-full bg-indigo-500 transition-all"
-            style={{ width: `${percent}%` }}
+            style={{ width: percent + "%" }}
           />
         </div>
         <div className="mt-1 text-xs text-slate-500">
-          {subject.daysCompleted} / {subject.totalDays} days
+          {s.daysCompleted} / {s.totalDays} days
         </div>
       </div>
 
-      {/* Flashcard breakdown */}
-      {subject.flashcardsTotal > 0 && (
+      {s.flashcardsTotal > 0 && (
         <div className="mt-4 pt-4 border-t border-slate-800">
           <div className="text-sm text-slate-400 mb-2">Flashcard difficulty</div>
           <div className="flex items-center gap-2">
             <DifficultyBar
               label="Easy"
-              count={subject.easyCards}
-              total={subject.flashcardsTotal}
+              count={s.easyCards}
+              total={s.flashcardsTotal}
               color="bg-emerald-500"
             />
             <DifficultyBar
               label="Medium"
-              count={subject.mediumCards}
-              total={subject.flashcardsTotal}
+              count={s.mediumCards}
+              total={s.flashcardsTotal}
               color="bg-amber-500"
             />
             <DifficultyBar
               label="Hard"
-              count={subject.hardCards}
-              total={subject.flashcardsTotal}
+              count={s.hardCards}
+              total={s.flashcardsTotal}
               color="bg-red-500"
             />
           </div>
           <div className="mt-2 text-xs text-slate-500">
-            {subject.flashcardsTotal} total flashcards
-            {subject.flashcardsReviewed > 0 && ` · ${subject.flashcardsReviewed} reviewed`}
+            {s.flashcardsTotal} total flashcards
+            {s.flashcardsReviewed > 0 && " - " + s.flashcardsReviewed + " reviewed"}
           </div>
         </div>
       )}
@@ -204,36 +249,22 @@ function SubjectCard({ subject }) {
   );
 }
 
-function DifficultyBar({ label, count, total, color }) {
-  const percent = total > 0 ? (count / total) * 100 : 0;
+function DifficultyBar(props) {
+  let percent = 0;
+  if (props.total > 0) percent = (props.count / props.total) * 100;
+
   return (
     <div className="flex-1">
       <div className="flex justify-between text-xs text-slate-400 mb-1">
-        <span>{label}</span>
-        <span>{count}</span>
+        <span>{props.label}</span>
+        <span>{props.count}</span>
       </div>
       <div className="h-1.5 w-full rounded-full bg-slate-800">
         <div
-          className={`h-1.5 rounded-full ${color} transition-all`}
-          style={{ width: `${percent}%` }}
+          className={"h-1.5 rounded-full " + props.color + " transition-all"}
+          style={{ width: percent + "%" }}
         />
       </div>
     </div>
   );
-}
-
-function emptySubject(name) {
-  return {
-    name,
-    plans: [],
-    totalDays: 0,
-    daysCompleted: 0,
-    totalTopics: 0,
-    flashcardsTotal: 0,
-    flashcardsReviewed: 0,
-    easyCards: 0,
-    mediumCards: 0,
-    hardCards: 0,
-    materialsCount: 0,
-  };
 }

@@ -3,18 +3,22 @@ import { useAuth } from "../lib/auth.jsx";
 import NotificationBell from "./NotificationBell.jsx";
 
 export default function Navbar() {
-  const { user, logout } = useAuth();
+  const auth = useAuth();
+  const user = auth.user;
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
+  function handleLogout() {
+    auth.logout();
     navigate("/login");
-  };
+  }
 
   return (
     <nav className="border-b border-slate-800 bg-slate-900/70 backdrop-blur sticky top-0 z-10">
       <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
-        <Link to={user ? "/dashboard" : "/"} className="text-xl font-bold text-white">
+        <Link
+          to={user ? "/dashboard" : "/"}
+          className="text-xl font-bold text-white"
+        >
           FLASH<span className="text-indigo-400">MASTER</span>
         </Link>
         <div className="flex items-center gap-4 text-sm">

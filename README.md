@@ -56,19 +56,81 @@ For diagrams and detailed walkthroughs, see [`FLASHMASTER_REPORT_v7.docx`](./FLA
 
 ### Prerequisites
 
-- Node.js v20 or above
-- MongoDB Community Edition running locally on `mongodb://localhost:27017`
+- Node.js v20 or above (check with `node --version`)
+- MongoDB Community Edition installed locally
 - Git
 
-### Install and run
+### Step 1 - Install dependencies (first time only)
+
+The project has three `package.json` files (root, backend, frontend). Each one needs its own `node_modules` folder full of libraries. One command installs all three:
 
 ```bash
 # from the project root (FLASHCARDS folder)
-npm run install:all     # installs root + backend + frontend dependencies
-npm run dev             # starts backend (port 5000) + frontend (port 5173) together
+npm run install:all
 ```
 
+This takes 1-2 minutes the first time. You will see three `node_modules/` folders appear.
+
+> Note: `node_modules/` is NOT included in the Git repo because it is huge (~220 MB) and fully regenerated from `package.json` and `package-lock.json`. If you clone the project or delete the folders, just rerun `npm run install:all`.
+
+### Step 2 - Start MongoDB
+
+The backend needs MongoDB running on `mongodb://localhost:27017`.
+
+**On Windows** - open PowerShell as Administrator and run:
+```powershell
+Start-Service MongoDB
+```
+Or (if the Windows service is not installed), from a regular terminal:
+```bash
+"C:/Program Files/MongoDB/Server/8.2/bin/mongod.exe" --dbpath "C:/data/db"
+```
+Leave that window open while using the app.
+
+**On macOS**:
+```bash
+brew services start mongodb-community
+```
+
+### Step 3 - Run the app
+
+```bash
+# from the project root
+npm run dev
+```
+
+This starts the backend on `:5000` and the frontend on `:5173` together using `concurrently`.
+
 Open `http://localhost:5173` in your browser.
+
+### Troubleshooting
+
+**"Cannot find module 'express'" or similar missing-module errors**
+Your `node_modules/` is missing or corrupt. Reinstall:
+```bash
+npm run install:all
+```
+
+**"MongoDB connection failed: connect ECONNREFUSED"**
+MongoDB is not running. See Step 2 above.
+
+**Clean reinstall (when things feel broken)**
+```bash
+# from the project root - delete everything and start fresh
+rm -rf node_modules backend/node_modules frontend/node_modules
+npm cache clean --force     # wipes npm's download cache
+npm run install:all
+```
+Use this when `npm install` gives weird errors about locked files or corrupted downloads.
+
+**Port 5173 or 5000 already in use**
+An old dev server is still running. On Windows:
+```powershell
+# find the process using the port
+Get-NetTCPConnection -LocalPort 5173 -State Listen | Select-Object OwningProcess
+# kill it (replace <PID> with the number from above)
+Stop-Process -Id <PID> -Force
+```
 
 ### First-time setup
 

@@ -6,19 +6,25 @@ import { StudyPlan } from "../models/StudyPlan.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 
 const router = Router();
+// Every admin endpoint requires login AND admin role.
 router.use(requireAuth, requireRole("admin"));
 
-router.get("/materials", async (req, res) => {
+// GET /api/admin/materials - every user's uploads
+router.get("/materials", async function (req, res) {
   const materials = await StudyMaterial.find()
     .sort({ createdAt: -1 })
     .populate("userId", "name email");
   res.json(materials);
 });
 
-router.delete("/materials/:id", async (req, res) => {
+// DELETE /api/admin/materials/:id - delete a material and its flashcards
+router.delete("/materials/:id", async function (req, res) {
   try {
     const material = await StudyMaterial.findByIdAndDelete(req.params.id);
-    if (!material) return res.status(404).json({ error: "Not found" });
+    if (!material) {
+      return res.status(404).json({ error: "Not found" });
+    }
+    // Also delete all flashcards linked to this material.
     await Flashcard.deleteMany({ materialId: material._id });
     res.json({ deleted: true, id: material._id });
   } catch (err) {
@@ -26,10 +32,11 @@ router.delete("/materials/:id", async (req, res) => {
   }
 });
 
-router.patch("/users/:id/role", async (req, res) => {
+// PATCH /api/admin/users/:id/role - promote/demote a user
+router.patch("/users/:id/role", async function (req, res) {
   try {
-    const { role } = req.body;
-    if (!["admin", "student"].includes(role)) {
+    const role = req.body.role;
+    if (role !== "admin" && role !== "student") {
       return res.status(400).json({ error: "role must be 'admin' or 'student'" });
     }
     if (req.user._id.toString() === req.params.id) {
@@ -37,38 +44,47 @@ router.patch("/users/:id/role", async (req, res) => {
     }
     const user = await User.findByIdAndUpdate(
       req.params.id,
-      { role },
+      { role: role },
       { new: true, runValidators: true }
     );
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
     res.json(user);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-router.get("/stats", async (req, res) => {
-  const [users, students, admins, materials, flashcards, plans] = await Promise.all([
-    User.countDocuments(),
-    User.countDocuments({ role: "student" }),
-    User.countDocuments({ role: "admin" }),
-    StudyMaterial.countDocuments(),
-    Flashcard.countDocuments(),
-    StudyPlan.countDocuments(),
-  ]);
-
+// GET /api/admin/stats - platform-wide statistics
+router.get("/stats", async function (req, res) {
+  // Run the counts one after another (simple and easy to read).
+  const totalUsers = await User.countDocuments();
+  const totalStudents = await User.countDocuments({ role: "student" });
+  const totalAdmins = await User.countDocuments({ role: "admin" });
+  const totalMaterials = await StudyMaterial.countDocuments();
+  const totalFlashcards = await Flashcard.countDocuments();
+  const totalPlans = await StudyPlan.countDocuments();
   const hardCards = await Flashcard.countDocuments({ difficulty: "hard" });
+
   const recentMaterials = await StudyMaterial.find()
     .sort({ createdAt: -1 })
     .limit(5)
     .populate("userId", "name email");
 
   res.json({
-    users: { total: users, students, admins },
-    materials,
-    flashcards: { total: flashcards, hard: hardCards },
-    plans,
-    recentMaterials,
+    users: {
+      total: totalUsers,
+      students: totalStudents,
+      admins: totalAdmins,
+    },
+    materials: totalMaterials,
+    flashcards: {
+      total: totalFlashcards,
+      hard: hardCards,
+    },
+    plans: totalPlans,
+    recentMaterials: recentMaterials,
   });
 });
 

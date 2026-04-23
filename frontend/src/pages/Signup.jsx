@@ -3,27 +3,35 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/auth.jsx";
 
 export default function Signup() {
-  const { signup } = useAuth();
+  const auth = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: "", email: "", password: "", role: "student" });
+
+  // Keep each field in its own state variable for clarity.
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("student");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const update = (k) => (e) => setForm({ ...form, [k]: e.target.value });
-
-  const handleSubmit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      await signup(form);
+      await auth.signup({
+        name: name,
+        email: email,
+        password: password,
+        role: role,
+      });
       navigate("/dashboard");
     } catch (err) {
       setError(err.message || "Signup failed");
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   return (
     <div className="max-w-md mx-auto px-6 py-16">
@@ -31,45 +39,66 @@ export default function Signup() {
       <p className="mt-2 text-slate-400">Start building your flashcard deck.</p>
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-        <Field label="Full name" value={form.name} onChange={update("name")} />
-        <Field label="Email" type="email" value={form.email} onChange={update("email")} />
-        <Field label="Password (min 6 chars)" type="password" value={form.password} onChange={update("password")} />
+        <label className="block">
+          <div className="text-sm text-slate-300">Full name</div>
+          <input
+            type="text"
+            value={name}
+            onChange={function (e) { setName(e.target.value); }}
+            required
+            className="mt-1 w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-white focus:border-indigo-500 focus:outline-none"
+          />
+        </label>
 
         <label className="block">
+          <div className="text-sm text-slate-300">Email</div>
+          <input
+            type="email"
+            value={email}
+            onChange={function (e) { setEmail(e.target.value); }}
+            required
+            className="mt-1 w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-white focus:border-indigo-500 focus:outline-none"
+          />
+        </label>
+
+        <label className="block">
+          <div className="text-sm text-slate-300">Password (min 6 chars)</div>
+          <input
+            type="password"
+            value={password}
+            onChange={function (e) { setPassword(e.target.value); }}
+            required
+            className="mt-1 w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-white focus:border-indigo-500 focus:outline-none"
+          />
+        </label>
+
+        <div className="block">
           <div className="text-sm text-slate-300">Role</div>
           <div className="mt-2 flex gap-3">
-            <label className={`flex-1 cursor-pointer rounded-md border px-3 py-2 text-sm ${
-              form.role === "student"
-                ? "border-indigo-500 bg-indigo-500/10 text-indigo-200"
-                : "border-slate-700 bg-slate-900 text-slate-400 hover:border-slate-600"
-            }`}>
-              <input
-                type="radio"
-                name="role"
-                value="student"
-                checked={form.role === "student"}
-                onChange={update("role")}
-                className="sr-only"
-              />
+            <button
+              type="button"
+              onClick={function () { setRole("student"); }}
+              className={
+                role === "student"
+                  ? "flex-1 rounded-md border px-3 py-2 text-sm border-indigo-500 bg-indigo-500/10 text-indigo-200"
+                  : "flex-1 rounded-md border px-3 py-2 text-sm border-slate-700 bg-slate-900 text-slate-400 hover:border-slate-600"
+              }
+            >
               Student
-            </label>
-            <label className={`flex-1 cursor-pointer rounded-md border px-3 py-2 text-sm ${
-              form.role === "admin"
-                ? "border-amber-500 bg-amber-500/10 text-amber-200"
-                : "border-slate-700 bg-slate-900 text-slate-400 hover:border-slate-600"
-            }`}>
-              <input
-                type="radio"
-                name="role"
-                value="admin"
-                checked={form.role === "admin"}
-                onChange={update("role")}
-                className="sr-only"
-              />
+            </button>
+            <button
+              type="button"
+              onClick={function () { setRole("admin"); }}
+              className={
+                role === "admin"
+                  ? "flex-1 rounded-md border px-3 py-2 text-sm border-amber-500 bg-amber-500/10 text-amber-200"
+                  : "flex-1 rounded-md border px-3 py-2 text-sm border-slate-700 bg-slate-900 text-slate-400 hover:border-slate-600"
+              }
+            >
               Admin
-            </label>
+            </button>
           </div>
-        </label>
+        </div>
 
         {error && (
           <div className="rounded-md bg-red-950/60 border border-red-900 text-red-300 px-3 py-2 text-sm">
@@ -82,7 +111,7 @@ export default function Signup() {
           disabled={loading}
           className="w-full rounded-lg bg-indigo-500 px-4 py-2.5 text-white font-medium hover:bg-indigo-400 disabled:opacity-50"
         >
-          {loading ? "Creating…" : "Sign up"}
+          {loading ? "Creating..." : "Sign up"}
         </button>
       </form>
 
@@ -93,20 +122,5 @@ export default function Signup() {
         </Link>
       </p>
     </div>
-  );
-}
-
-function Field({ label, type = "text", value, onChange }) {
-  return (
-    <label className="block">
-      <div className="text-sm text-slate-300">{label}</div>
-      <input
-        type={type}
-        value={value}
-        onChange={onChange}
-        required
-        className="mt-1 w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-white focus:border-indigo-500 focus:outline-none"
-      />
-    </label>
   );
 }

@@ -6,32 +6,46 @@ import { requireAuth } from "../middleware/auth.js";
 
 const router = Router();
 
-const signToken = (user) =>
-  jwt.sign(
-    { userId: user._id.toString(), role: user.role },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
-  );
+// Make a JWT token for a user.
+function signToken(user) {
+  const payload = { userId: user._id.toString(), role: user.role };
+  const secret = process.env.JWT_SECRET;
+  const expiresIn = process.env.JWT_EXPIRES_IN || "7d";
+  return jwt.sign(payload, secret, { expiresIn: expiresIn });
+}
 
-router.post("/signup", async (req, res) => {
+// POST /api/auth/signup
+router.post("/signup", async function (req, res) {
   try {
-    const { name, email, password, role } = req.body;
+    const name = req.body.name;
+    const email = req.body.email;
+    const password = req.body.password;
+    const role = req.body.role;
 
     if (!password || password.length < 6) {
       return res.status(400).json({ error: "Password must be at least 6 characters" });
     }
 
-    const allowedRoles = ["student", "admin"];
-    const finalRole = allowedRoles.includes(role) ? role : "student";
+    // Only allow these two roles. Default to student.
+    let finalRole = "student";
+    if (role === "student" || role === "admin") {
+      finalRole = role;
+    }
 
     const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS || "10", 10);
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
-    const user = await User.create({ name, email, passwordHash, role: finalRole });
+    const user = await User.create({
+      name: name,
+      email: email,
+      passwordHash: passwordHash,
+      role: finalRole,
+    });
     const token = signToken(user);
 
-    res.status(201).json({ user, token });
+    res.status(201).json({ user: user, token: token });
   } catch (err) {
+    // Mongo error code 11000 means duplicate key (email already exists).
     if (err.code === 11000) {
       return res.status(409).json({ error: "Email already in use" });
     }
@@ -39,9 +53,12 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-router.post("/login", async (req, res) => {
+// POST /api/auth/login
+router.post("/login", async function (req, res) {
   try {
-    const { email, password } = req.body;
+    const email = req.body.email;
+    const password = req.body.password;
+
     if (!email || !password) {
       return res.status(400).json({ error: "Email and password required" });
     }
@@ -57,13 +74,14 @@ router.post("/login", async (req, res) => {
     }
 
     const token = signToken(user);
-    res.json({ user, token });
+    res.json({ user: user, token: token });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-router.get("/me", requireAuth, (req, res) => {
+// GET /api/auth/me - returns the current logged-in user
+router.get("/me", requireAuth, function (req, res) {
   res.json({ user: req.user });
 });
 

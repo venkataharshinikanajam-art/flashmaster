@@ -3,7 +3,7 @@ import { User } from "../models/User.js";
 
 // Checks the request has a valid JWT in the Authorization header.
 // If valid, it loads the user into req.user and calls next().
-export const requireAuth = async (req, res, next) => {
+export async function requireAuth(req, res, next) {
   try {
     const header = req.headers.authorization || "";
     const parts = header.split(" ");
@@ -26,18 +26,17 @@ export const requireAuth = async (req, res, next) => {
   } catch (err) {
     return res.status(401).json({ error: "Invalid or expired token" });
   }
-};
+}
 
 // requireRole("admin") returns a middleware that only lets admins through.
-// Calling it this way lets us pass the role we want to check each time.
-export const requireRole = (role) => {
-  return (req, res, next) => {
+export function requireRole(role) {
+  return function (req, res, next) {
     if (!req.user) {
       return res.status(401).json({ error: "Not authenticated" });
     }
     if (req.user.role !== role) {
-      return res.status(403).json({ error: `Requires '${role}' role` });
+      return res.status(403).json({ error: "Requires '" + role + "' role" });
     }
     next();
   };
-};
+}

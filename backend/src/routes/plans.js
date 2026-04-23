@@ -8,26 +8,30 @@ import { generateSchedule } from "../services/planGenerator.js";
 const router = Router();
 router.use(requireAuth);
 
-// Create a plan. Also auto-generates the day-by-day schedule.
-router.post("/", async (req, res) => {
+// POST /api/plans - create a new study plan and auto-generate its schedule.
+router.post("/", async function (req, res) {
   try {
-    const { subject, examDate, dailyStudyHours, topics, topicDifficulties } = req.body;
+    const subject = req.body.subject;
+    const examDate = req.body.examDate;
+    const dailyStudyHours = req.body.dailyStudyHours;
+    const topics = req.body.topics || [];
+    const topicDifficulties = req.body.topicDifficulties || {};
 
     const schedule = generateSchedule({
-      topics: topics || [],
-      examDate,
+      topics: topics,
+      examDate: examDate,
       dailyStudyHours: Number(dailyStudyHours),
-      topicDifficulties: topicDifficulties || {},
+      topicDifficulties: topicDifficulties,
     });
 
     const plan = await StudyPlan.create({
       userId: req.user._id,
-      subject,
-      examDate,
-      dailyStudyHours,
-      topics,
-      topicDifficulties: topicDifficulties || {},
-      schedule,
+      subject: subject,
+      examDate: examDate,
+      dailyStudyHours: dailyStudyHours,
+      topics: topics,
+      topicDifficulties: topicDifficulties,
+      schedule: schedule,
     });
 
     res.status(201).json(plan);
@@ -36,23 +40,27 @@ router.post("/", async (req, res) => {
   }
 });
 
-// List all plans for the logged-in user.
-router.get("/", async (req, res) => {
+// GET /api/plans - list all plans for the logged-in user.
+router.get("/", async function (req, res) {
   const plans = await StudyPlan.find({ userId: req.user._id }).sort({ examDate: 1 });
   const enriched = [];
-  for (const plan of plans) {
-    const data = await enrichPlan(plan, req.user._id);
+  for (let i = 0; i < plans.length; i++) {
+    const data = await enrichPlan(plans[i], req.user._id);
     enriched.push(data);
   }
   res.json(enriched);
 });
 
-// Get one plan by id.
-router.get("/:id", async (req, res) => {
+// GET /api/plans/:id - read one plan.
+router.get("/:id", async function (req, res) {
   try {
-    const plan = await StudyPlan.findOne({ _id: req.params.id, userId: req.user._id });
-    if (!plan) return res.status(404).json({ error: "Not found" });
-
+    const plan = await StudyPlan.findOne({
+      _id: req.params.id,
+      userId: req.user._id,
+    });
+    if (!plan) {
+      return res.status(404).json({ error: "Not found" });
+    }
     const enriched = await enrichPlan(plan, req.user._id);
     res.json(enriched);
   } catch (err) {
@@ -60,32 +68,44 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Update plan. Handles three cases:
+// PATCH /api/plans/:id - three cases:
 //   1. Mark a specific day as completed.
 //   2. Mark a specific day as not completed.
 //   3. Edit plan fields (subject, topics, dates, etc.).
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", async function (req, res) {
   try {
-    const plan = await StudyPlan.findOne({ _id: req.params.id, userId: req.user._id });
-    if (!plan) return res.status(404).json({ error: "Not found" });
+    const plan = await StudyPlan.findOne({
+      _id: req.params.id,
+      userId: req.user._id,
+    });
+    if (!plan) {
+      return res.status(404).json({ error: "Not found" });
+    }
 
+    // Case 1: mark day as done
     if (req.body.completeDayNumber !== undefined) {
       setDayCompleted(plan, req.body.completeDayNumber, true);
       await plan.save();
-      return res.json(await enrichPlan(plan, req.user._id));
+      const enriched = await enrichPlan(plan, req.user._id);
+      return res.json(enriched);
     }
 
+    // Case 2: mark day as not done
     if (req.body.uncompleteDayNumber !== undefined) {
       setDayCompleted(plan, req.body.uncompleteDayNumber, false);
       await plan.save();
-      return res.json(await enrichPlan(plan, req.user._id));
+      const enriched = await enrichPlan(plan, req.user._id);
+      return res.json(enriched);
     }
 
-    // Update plain fields
+    // Case 3: update plain fields.
     const allowed = ["subject", "examDate", "dailyStudyHours", "topics", "topicDifficulties"];
     const updates = {};
-    for (const key of allowed) {
-      if (req.body[key] !== undefined) updates[key] = req.body[key];
+    for (let i = 0; i < allowed.length; i++) {
+      const key = allowed[i];
+      if (req.body[key] !== undefined) {
+        updates[key] = req.body[key];
+      }
     }
 
     // If something that affects the schedule changed, rebuild the schedule.
@@ -113,52 +133,70 @@ router.patch("/:id", async (req, res) => {
       });
     }
 
+    // Copy the allowed updates onto the plan.
     Object.assign(plan, updates);
     await plan.save();
 
-    res.json(await enrichPlan(plan, req.user._id));
+    const enriched = await enrichPlan(plan, req.user._id);
+    res.json(enriched);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-// Delete a plan.
-router.delete("/:id", async (req, res) => {
+// DELETE /api/plans/:id
+router.delete("/:id", async function (req, res) {
   try {
     const plan = await StudyPlan.findOneAndDelete({
       _id: req.params.id,
       userId: req.user._id,
     });
-    if (!plan) return res.status(404).json({ error: "Not found" });
+    if (!plan) {
+      return res.status(404).json({ error: "Not found" });
+    }
     res.json({ deleted: true, id: plan._id });
   } catch (err) {
     res.status(400).json({ error: "Invalid ID" });
   }
 });
 
-// Helper: change the completed flag on a single day inside the plan.
+// Helper: flip the completed flag for one day in a plan.
 function setDayCompleted(plan, dayNumber, completed) {
-  const dayIndex = plan.schedule.findIndex((d) => d.day === dayNumber);
-  if (dayIndex !== -1) {
-    plan.schedule[dayIndex].completed = completed;
+  for (let i = 0; i < plan.schedule.length; i++) {
+    if (plan.schedule[i].day === dayNumber) {
+      plan.schedule[i].completed = completed;
+      return;
+    }
   }
 }
 
-// Helper: add stats (flashcard counts, progress %, today's entry) to a plan object.
+// Helper: add stats (flashcard counts, progress %, today's entry) to a plan.
 async function enrichPlan(plan, userId) {
   const obj = plan.toJSON();
 
-  const flashcards = await Flashcard.find({ userId, subject: plan.subject });
-  const materials = await StudyMaterial.find({ userId, subject: plan.subject });
+  const flashcards = await Flashcard.find({ userId: userId, subject: plan.subject });
+  const materials = await StudyMaterial.find({ userId: userId, subject: plan.subject });
 
-  const easyCount = flashcards.filter((f) => f.difficulty === "easy").length;
-  const mediumCount = flashcards.filter((f) => f.difficulty === "medium").length;
-  const hardCount = flashcards.filter((f) => f.difficulty === "hard").length;
+  // Count flashcards by difficulty using a simple for-loop.
+  let easyCount = 0;
+  let mediumCount = 0;
+  let hardCount = 0;
+  for (let i = 0; i < flashcards.length; i++) {
+    if (flashcards[i].difficulty === "easy") easyCount++;
+    else if (flashcards[i].difficulty === "medium") mediumCount++;
+    else if (flashcards[i].difficulty === "hard") hardCount++;
+  }
 
-  const daysCompleted = obj.schedule.filter((d) => d.completed).length;
+  // Count completed days.
+  let daysCompleted = 0;
+  for (let i = 0; i < obj.schedule.length; i++) {
+    if (obj.schedule[i].completed) daysCompleted++;
+  }
   const totalDays = obj.schedule.length;
-  const progressPercent =
-    totalDays > 0 ? Math.round((daysCompleted / totalDays) * 100) : 0;
+  let progressPercent = 0;
+  if (totalDays > 0) {
+    progressPercent = Math.round((daysCompleted / totalDays) * 100);
+  }
 
   obj.stats = {
     totalFlashcards: flashcards.length,
@@ -168,13 +206,20 @@ async function enrichPlan(plan, userId) {
       hard: hardCount,
     },
     totalMaterials: materials.length,
-    daysCompleted,
-    totalDays,
-    progressPercent,
+    daysCompleted: daysCompleted,
+    totalDays: totalDays,
+    progressPercent: progressPercent,
   };
 
+  // Find today's entry in the schedule.
   const todayStr = new Date().toISOString().split("T")[0];
-  obj.today = obj.schedule.find((d) => d.date === todayStr) || null;
+  obj.today = null;
+  for (let i = 0; i < obj.schedule.length; i++) {
+    if (obj.schedule[i].date === todayStr) {
+      obj.today = obj.schedule[i];
+      break;
+    }
+  }
 
   return obj;
 }
