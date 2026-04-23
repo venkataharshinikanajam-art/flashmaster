@@ -1,8 +1,3 @@
-// ===================================================================
-// Admin-only routes — mounted at /api/admin
-// Every route here requires both a valid JWT AND the "admin" role.
-// ===================================================================
-
 import { Router } from "express";
 import { User } from "../models/User.js";
 import { StudyMaterial } from "../models/StudyMaterial.js";
@@ -13,7 +8,6 @@ import { requireAuth, requireRole } from "../middleware/auth.js";
 const router = Router();
 router.use(requireAuth, requireRole("admin"));
 
-// GET /api/admin/materials — every user's uploads, with owner info attached
 router.get("/materials", async (req, res) => {
   const materials = await StudyMaterial.find()
     .sort({ createdAt: -1 })
@@ -21,7 +15,6 @@ router.get("/materials", async (req, res) => {
   res.json(materials);
 });
 
-// DELETE /api/admin/materials/:id — admin can remove any upload
 router.delete("/materials/:id", async (req, res) => {
   try {
     const material = await StudyMaterial.findByIdAndDelete(req.params.id);
@@ -33,7 +26,27 @@ router.delete("/materials/:id", async (req, res) => {
   }
 });
 
-// GET /api/admin/stats — platform-wide counts for the reports view
+router.patch("/users/:id/role", async (req, res) => {
+  try {
+    const { role } = req.body;
+    if (!["admin", "student"].includes(role)) {
+      return res.status(400).json({ error: "role must be 'admin' or 'student'" });
+    }
+    if (req.user._id.toString() === req.params.id) {
+      return res.status(400).json({ error: "You cannot change your own role" });
+    }
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { role },
+      { new: true, runValidators: true }
+    );
+    if (!user) return res.status(404).json({ error: "User not found" });
+    res.json(user);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 router.get("/stats", async (req, res) => {
   const [users, students, admins, materials, flashcards, plans] = await Promise.all([
     User.countDocuments(),

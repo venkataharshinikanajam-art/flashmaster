@@ -124,6 +124,8 @@ Plain-English definitions of terms used in this project. Every new word Claude i
 
 ## N
 
+**Never trust the client** — A core web security rule. Anything the browser sends in a request body (like `role`, `isAdmin`, `price`) can be tampered with by an attacker using Postman or devtools. The backend must decide permission-granting fields from its own database or a trusted JWT, never from `req.body`. Example: public signup always sets `role: "student"` server-side, ignoring whatever the form sent.
+
 **Node.js** — A program that lets you run JavaScript outside the browser. Required for our backend.
 
 **npm (Node Package Manager)** — Installs and manages JavaScript libraries. Comes with Node.

@@ -1,8 +1,3 @@
-// ===================================================================
-// Progress — tracks a user's progress for a specific subject.
-// One document per (user, subject) pair.
-// ===================================================================
-
 import mongoose from "mongoose";
 
 const progressSchema = new mongoose.Schema(

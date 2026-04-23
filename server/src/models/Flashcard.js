@@ -1,7 +1,3 @@
-// ===================================================================
-// Flashcard — one Q/A pair. Belongs to a user and optionally a material.
-// ===================================================================
-
 import mongoose from "mongoose";
 
 const flashcardSchema = new mongoose.Schema(

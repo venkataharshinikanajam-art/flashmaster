@@ -113,8 +113,6 @@ export default function Plans() {
   );
 }
 
-// ===================== TODAY CARD =====================
-
 function TodayCard({ plan, onComplete, onStudyNow, onViewNotes }) {
   const { today, stats, subject, schedule } = plan;
   if (!today) return null;
@@ -210,8 +208,6 @@ function TodayCard({ plan, onComplete, onStudyNow, onViewNotes }) {
     </div>
   );
 }
-
-// ===================== PLAN CARD =====================
 
 function PlanCard({ plan, expanded, onToggle, onDelete, onComplete, daysUntil }) {
   const { stats } = plan;
@@ -322,8 +318,6 @@ function PlanCard({ plan, expanded, onToggle, onDelete, onComplete, daysUntil })
     </div>
   );
 }
-
-// ===================== CREATE FORM =====================
 
 function CreateForm({ onCreated }) {
   const [subject, setSubject] = useState("");

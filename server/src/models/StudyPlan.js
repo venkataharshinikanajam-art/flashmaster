@@ -1,7 +1,3 @@
-// ===================================================================
-// StudyPlan — a user's plan for preparing for a specific exam.
-// ===================================================================
-
 import mongoose from "mongoose";
 
 const scheduleDaySchema = new mongoose.Schema(

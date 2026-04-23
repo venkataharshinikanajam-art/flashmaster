@@ -1,8 +1,3 @@
-// ===================================================================
-// StudyMaterial CRUD — all routes require auth and scope to req.user.
-// Mounted at /api/materials
-// ===================================================================
-
 import { Router } from "express";
 import { StudyMaterial } from "../models/StudyMaterial.js";
 import { Flashcard } from "../models/Flashcard.js";
@@ -10,22 +5,17 @@ import { requireAuth } from "../middleware/auth.js";
 import { upload } from "../middleware/upload.js";
 import { generateFlashcards } from "../services/flashcardGenerator.js";
 import { generateFlashcardsWithOllama } from "../services/ollamaGenerator.js";
+import { PDFParse } from "pdf-parse";
 
-// Try Ollama first (local LLM), fall back to the heuristic generator.
-// Returns { cards, source } — source is "ollama" or "heuristic".
 const generateCards = async (text) => {
   const ai = await generateFlashcardsWithOllama(text);
   if (ai && ai.length > 0) return { cards: ai, source: "ollama" };
   return { cards: generateFlashcards(text, { max: 20 }), source: "heuristic" };
 };
 
-// pdf-parse v2 uses a class-based API.
-import { PDFParse } from "pdf-parse";
-
 const router = Router();
-router.use(requireAuth); // every route below needs a valid JWT
+router.use(requireAuth);
 
-// CREATE (text-only — for pasted content)
 router.post("/", async (req, res) => {
   try {
     const material = await StudyMaterial.create({
@@ -38,11 +28,6 @@ router.post("/", async (req, res) => {
   }
 });
 
-// UPLOAD — POST /api/materials/upload
-// multipart/form-data with fields:
-//   - file   (the PDF or .txt)
-//   - title  (string)
-//   - subject (string)
 router.post("/upload", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "file field is required" });
@@ -51,7 +36,6 @@ router.post("/upload", upload.single("file"), async (req, res) => {
       return res.status(400).json({ error: "title and subject are required" });
     }
 
-    // With memory storage, the file bytes live at req.file.buffer.
     const buffer = req.file.buffer;
     let content = "";
     if (req.file.mimetype === "application/pdf") {
@@ -79,7 +63,6 @@ router.post("/upload", upload.single("file"), async (req, res) => {
       sourceFile: req.file.originalname,
     });
 
-    // Auto-generate flashcards from the extracted text (Ollama if available, else heuristic).
     const { cards: generated, source } = await generateCards(content);
     const cards = await Flashcard.insertMany(
       generated.map((c) => ({
@@ -107,7 +90,6 @@ router.post("/upload", upload.single("file"), async (req, res) => {
   }
 });
 
-// LIST (only the current user's) — optional ?subject= and ?topic= filters
 router.get("/", async (req, res) => {
   const { subject, topic } = req.query;
   const filter = { userId: req.user._id };
@@ -117,7 +99,6 @@ router.get("/", async (req, res) => {
   res.json(materials);
 });
 
-// READ ONE (ownership enforced via filter)
 router.get("/:id", async (req, res) => {
   try {
     const material = await StudyMaterial.findOne({ _id: req.params.id, userId: req.user._id });
@@ -128,7 +109,6 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// UPDATE
 router.patch("/:id", async (req, res) => {
   try {
     const material = await StudyMaterial.findOneAndUpdate(
@@ -143,8 +123,6 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
-// GENERATE flashcards from an existing material.
-// Optional query: ?replace=true  → delete existing cards for this material first.
 router.post("/:id/generate-flashcards", async (req, res) => {
   try {
     const material = await StudyMaterial.findOne({ _id: req.params.id, userId: req.user._id });
@@ -171,7 +149,6 @@ router.post("/:id/generate-flashcards", async (req, res) => {
   }
 });
 
-// DELETE
 router.delete("/:id", async (req, res) => {
   try {
     const material = await StudyMaterial.findOneAndDelete({

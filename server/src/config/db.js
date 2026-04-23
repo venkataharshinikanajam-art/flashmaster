@@ -1,8 +1,3 @@
-// ===================================================================
-// MongoDB connection helper.
-// Called once from index.js when the server starts.
-// ===================================================================
-
 import mongoose from "mongoose";
 
 export const connectDB = async () => {

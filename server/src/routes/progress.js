@@ -1,9 +1,3 @@
-// ===================================================================
-// Progress — scoped to req.user, one doc per subject.
-// Mounted at /api/progress
-// Uses "upsert" pattern: create or update by (userId, subject).
-// ===================================================================
-
 import { Router } from "express";
 import { Progress } from "../models/Progress.js";
 import { requireAuth } from "../middleware/auth.js";

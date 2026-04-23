@@ -1,17 +1,3 @@
-// ===================================================================
-// flashcardGenerator — heuristic text → flashcards.
-// Pure function. Takes a string, returns an array of { question, answer, difficulty }.
-// ===================================================================
-//
-// Patterns it recognizes:
-//   1. "X is Y"      → Q: What is X?        A: Y
-//   2. "X are Y"     → Q: What are X?       A: Y
-//   3. "X means Y"   → Q: What does X mean? A: Y
-//   4. "X: Y"        → Q: What is X?        A: Y   (list item style)
-//
-// The generator is intentionally simple. AI-based generation (Ollama) lands in Phase 13.
-// ===================================================================
-
 const MIN_SUBJECT_LEN = 2;
 const MAX_SUBJECT_LEN = 60;
 const MIN_ANSWER_LEN = 4;
@@ -24,7 +10,6 @@ const STOPWORDS = new Set([
   "and", "or", "but", "so", "because", "if", "then", "than",
 ]);
 
-// Rough sentence splitter. Not perfect, but good enough for study notes.
 const splitSentences = (text) =>
   text
     .replace(/\s+/g, " ")
@@ -56,10 +41,8 @@ const pickDifficulty = (answer) => {
   return "hard";
 };
 
-// Try each pattern against a sentence, return a {question, answer} or null.
 const patterns = [
   {
-    // "X is Y."
     regex: /^(.+?)\s+is\s+(.+?)[.!?]?$/i,
     build: ([, subject, rest]) => ({
       question: `What is ${cleanSubject(subject)}?`,
@@ -67,7 +50,6 @@ const patterns = [
     }),
   },
   {
-    // "X are Y."
     regex: /^(.+?)\s+are\s+(.+?)[.!?]?$/i,
     build: ([, subject, rest]) => ({
       question: `What are ${cleanSubject(subject)}?`,
@@ -75,7 +57,6 @@ const patterns = [
     }),
   },
   {
-    // "X means Y."
     regex: /^(.+?)\s+means\s+(.+?)[.!?]?$/i,
     build: ([, subject, rest]) => ({
       question: `What does ${cleanSubject(subject)} mean?`,
@@ -83,7 +64,6 @@ const patterns = [
     }),
   },
   {
-    // "X: Y"  (list-item / heading style)
     regex: /^([A-Z][^:]{1,50}):\s*(.+?)[.!?]?$/,
     build: ([, subject, rest]) => ({
       question: `What is ${cleanSubject(subject)}?`,
@@ -111,7 +91,7 @@ export const generateFlashcards = (text, { max = 20 } = {}) => {
       if (seen.has(key)) continue;
       seen.add(key);
       cards.push({ question, answer, difficulty: pickDifficulty(answer) });
-      break; // one card per sentence max
+      break;
     }
   }
 

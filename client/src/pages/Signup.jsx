@@ -5,7 +5,7 @@ import { useAuth } from "../lib/auth.jsx";
 export default function Signup() {
   const { signup } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: "", email: "", password: "", role: "student" });
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -34,18 +34,6 @@ export default function Signup() {
         <Field label="Full name" value={form.name} onChange={update("name")} />
         <Field label="Email" type="email" value={form.email} onChange={update("email")} />
         <Field label="Password (min 6 chars)" type="password" value={form.password} onChange={update("password")} />
-
-        <label className="block">
-          <div className="text-sm text-slate-300">Role</div>
-          <select
-            value={form.role}
-            onChange={update("role")}
-            className="mt-1 w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-white focus:border-indigo-500 focus:outline-none"
-          >
-            <option value="student">Student</option>
-            <option value="admin">Admin</option>
-          </select>
-        </label>
 
         {error && (
           <div className="rounded-md bg-red-950/60 border border-red-900 text-red-300 px-3 py-2 text-sm">

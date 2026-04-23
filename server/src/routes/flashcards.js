@@ -1,10 +1,3 @@
-// ===================================================================
-// Flashcard CRUD — scoped to req.user.
-// Mounted at /api/flashcards
-// Supports optional ?materialId= and ?difficulty= query filters.
-// Supports ?populate=material to embed the source material.
-// ===================================================================
-
 import { Router } from "express";
 import { Flashcard } from "../models/Flashcard.js";
 import { requireAuth } from "../middleware/auth.js";

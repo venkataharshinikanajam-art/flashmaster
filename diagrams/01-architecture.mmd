@@ -1,0 +1,25 @@
+flowchart LR
+    subgraph Client["FLASHMASTER Client (React 19 + Vite)"]
+        UI[Pages and Components]
+    end
+
+    subgraph Server["FLASHMASTER Server (Express 5 REST API)"]
+        Middleware[Auth + Upload Middleware]
+        Routes[Routes / Controllers]
+        Services[Services]
+    end
+
+    subgraph DB["MongoDB"]
+        Mongoose[Mongoose Models]
+    end
+
+    Files[(Local File Storage<br/>uploaded PDFs)]
+    Ollama[(Ollama Local LLM<br/>optional)]
+
+    UI -- "HTTP/JSON + JWT" --> Middleware
+    Middleware --> Routes
+    Routes --> Services
+    Services -- "Mongoose" --> Mongoose
+    Services -- "fs / multer" --> Files
+    Services -. "HTTP (optional)" .-> Ollama
+    Mongoose --> UI

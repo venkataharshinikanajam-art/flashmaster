@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api.js";
+import { useAuth } from "../lib/auth.jsx";
 
 const TABS = ["users", "materials", "reports"];
 
 export default function Admin() {
+  const { user: currentUser } = useAuth();
   const [tab, setTab] = useState("users");
   const [users, setUsers] = useState([]);
   const [materials, setMaterials] = useState([]);
@@ -44,6 +46,17 @@ export default function Admin() {
     }
   };
 
+  const handleRoleChange = async (id, nextRole) => {
+    const label = nextRole === "admin" ? "Promote this user to admin?" : "Demote this admin back to student?";
+    if (!confirm(label)) return;
+    try {
+      await api.patch(`/api/admin/users/${id}/role`, { role: nextRole });
+      loadAll();
+    } catch (e) {
+      alert(e.message);
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto px-6 py-10">
       <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
@@ -75,7 +88,9 @@ export default function Admin() {
         </div>
       ) : (
         <div className="mt-6">
-          {tab === "users" && <UsersTable users={users} />}
+          {tab === "users" && (
+            <UsersTable users={users} currentUserId={currentUser?._id} onRoleChange={handleRoleChange} />
+          )}
           {tab === "materials" && (
             <MaterialsTable materials={materials} onDelete={handleDeleteMaterial} />
           )}
@@ -86,7 +101,7 @@ export default function Admin() {
   );
 }
 
-function UsersTable({ users }) {
+function UsersTable({ users, currentUserId, onRoleChange }) {
   return (
     <div className="overflow-hidden rounded-xl border border-slate-800">
       <table className="w-full text-left text-sm">
@@ -96,29 +111,50 @@ function UsersTable({ users }) {
             <th className="px-4 py-3">Email</th>
             <th className="px-4 py-3">Role</th>
             <th className="px-4 py-3">Joined</th>
+            <th className="px-4 py-3"></th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-800">
-          {users.map((u) => (
-            <tr key={u._id} className="bg-slate-900/40 hover:bg-slate-900/70">
-              <td className="px-4 py-3 text-white">{u.name}</td>
-              <td className="px-4 py-3 text-slate-300">{u.email}</td>
-              <td className="px-4 py-3">
-                <span
-                  className={`rounded-full border px-2 py-0.5 text-xs ${
-                    u.role === "admin"
-                      ? "border-amber-800 bg-amber-900/40 text-amber-300"
-                      : "border-slate-700 bg-slate-800 text-slate-300"
-                  }`}
-                >
-                  {u.role}
-                </span>
-              </td>
-              <td className="px-4 py-3 text-slate-400">
-                {new Date(u.createdAt).toLocaleDateString()}
-              </td>
-            </tr>
-          ))}
+          {users.map((u) => {
+            const isSelf = u._id === currentUserId;
+            const nextRole = u.role === "admin" ? "student" : "admin";
+            return (
+              <tr key={u._id} className="bg-slate-900/40 hover:bg-slate-900/70">
+                <td className="px-4 py-3 text-white">{u.name}</td>
+                <td className="px-4 py-3 text-slate-300">{u.email}</td>
+                <td className="px-4 py-3">
+                  <span
+                    className={`rounded-full border px-2 py-0.5 text-xs ${
+                      u.role === "admin"
+                        ? "border-amber-800 bg-amber-900/40 text-amber-300"
+                        : "border-slate-700 bg-slate-800 text-slate-300"
+                    }`}
+                  >
+                    {u.role}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-slate-400">
+                  {new Date(u.createdAt).toLocaleDateString()}
+                </td>
+                <td className="px-4 py-3">
+                  {isSelf ? (
+                    <span className="text-xs text-slate-500">(you)</span>
+                  ) : (
+                    <button
+                      onClick={() => onRoleChange(u._id, nextRole)}
+                      className={`rounded border px-3 py-1 text-xs ${
+                        nextRole === "admin"
+                          ? "border-amber-800 text-amber-300 hover:border-amber-600"
+                          : "border-slate-700 text-slate-300 hover:border-slate-500"
+                      }`}
+                    >
+                      {nextRole === "admin" ? "Promote to admin" : "Demote to student"}
+                    </button>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

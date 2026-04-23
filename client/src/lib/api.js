@@ -1,10 +1,3 @@
-// ===================================================================
-// Tiny fetch wrapper that:
-//   - sends requests to the backend (http://localhost:5000)
-//   - attaches the JWT from localStorage to every request
-//   - parses JSON responses and throws on errors
-// ===================================================================
-
 const BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 const getToken = () => localStorage.getItem("flashmaster_token");

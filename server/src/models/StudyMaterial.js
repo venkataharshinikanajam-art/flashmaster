@@ -1,8 +1,3 @@
-// ===================================================================
-// StudyMaterial — raw study content uploaded by a user.
-// In Phase 6 we'll add file uploads; for now `content` is plain text.
-// ===================================================================
-
 import mongoose from "mongoose";
 
 const studyMaterialSchema = new mongoose.Schema(

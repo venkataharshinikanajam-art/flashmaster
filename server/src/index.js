@@ -1,8 +1,4 @@
-// ===================================================================
-// FLASHMASTER backend — entry point
-// ===================================================================
-
-import "dotenv/config"; // load .env BEFORE anything else
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { connectDB } from "./config/db.js";
@@ -18,15 +14,12 @@ import adminRouter from "./routes/admin.js";
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ---------- Middleware ----------
-// CORS — allow local dev ports plus any production client URL set via env var.
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
   "http://localhost:5175",
 ];
 if (process.env.CLIENT_ORIGIN) {
-  // Comma-separated list supported, e.g. "https://foo.vercel.app,https://bar.vercel.app"
   process.env.CLIENT_ORIGIN.split(",")
     .map((s) => s.trim())
     .filter(Boolean)
@@ -35,7 +28,6 @@ if (process.env.CLIENT_ORIGIN) {
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (e.g. curl, Postman, health checks)
       if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) return callback(null, true);
       return callback(new Error(`Origin ${origin} not allowed by CORS`));
@@ -50,7 +42,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// ---------- Routes ----------
 app.get("/", (req, res) => {
   res.send("FLASHMASTER backend is alive.");
 });
@@ -62,7 +53,6 @@ app.get("/api/hello", (req, res) => {
   });
 });
 
-// Mount routers
 app.use("/api/auth", authRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/materials", materialsRouter);
@@ -72,20 +62,16 @@ app.use("/api/progress", progressRouter);
 app.use("/api/notifications", notificationsRouter);
 app.use("/api/admin", adminRouter);
 
-// 404 catch-all
 app.use((req, res) => {
   res.status(404).json({ error: "Not Found", path: req.url });
 });
 
-// JSON error handler — runs when any middleware/route calls next(err) or throws.
-// Express identifies error handlers by the 4-argument signature (err, req, res, next).
 app.use((err, req, res, next) => {
   console.error("ERROR:", err.message);
   const status = err.status || 400;
   res.status(status).json({ error: err.message || "Internal server error" });
 });
 
-// ---------- Startup: connect to DB, then listen ----------
 const start = async () => {
   await connectDB();
   app.listen(PORT, () => {

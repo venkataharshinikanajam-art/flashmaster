@@ -1,18 +1,4 @@
 // server/src/services/planGenerator.js
-// ===================================================================
-// planGenerator — turns (topics, examDate, dailyHours, difficulties)
-// into a day-by-day study schedule.
-//
-// Algorithm:
-//   1. Count available days from today to the day before exam
-//   2. Reserve last 2 days for full revision (all topics)
-//   3. Remaining days follow a study-study-review cycle:
-//      - Day A: study new topic(s)
-//      - Day B: study new topic(s)
-//      - Day C: review topics from days A & B
-//   4. Hard topics get ~1.5x the time of easy topics
-//   5. Topics are ordered hard-first within each day
-// ===================================================================
 
 /**
  * @param {Object} opts

@@ -1,8 +1,3 @@
-// ===================================================================
-// Auth context — holds the current user and provides login/logout/signup.
-// Token is persisted in localStorage (see lib/api.js).
-// ===================================================================
-
 import { createContext, useContext, useEffect, useState } from "react";
 import { api, setToken } from "./api.js";
 
@@ -12,7 +7,6 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // On mount, if we have a token, fetch /api/auth/me to rehydrate the session.
   useEffect(() => {
     const token = localStorage.getItem("flashmaster_token");
     if (!token) {
@@ -23,7 +17,7 @@ export const AuthProvider = ({ children }) => {
       .get("/api/auth/me")
       .then((data) => setUser(data.user))
       .catch(() => {
-        setToken(null); // bad/expired token, clear it
+        setToken(null);
         setUser(null);
       })
       .finally(() => setLoading(false));

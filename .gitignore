@@ -55,6 +55,14 @@ temp/
 __pycache__/
 *.pyc
 
+# Word / Office lock files
+~$*
+
+# Old / sample / scratch documents — not part of the deliverable
+MedlyPharma.docx.pdf
+FLASHMASTER_REPORT_v*.docx
+DEMO_VIDEO_SCRIPT_v*.docx
+
 # Do NOT ignore these
 !.gitkeep
 !.env.example

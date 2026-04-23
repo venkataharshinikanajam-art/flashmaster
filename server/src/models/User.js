@@ -1,7 +1,3 @@
-// ===================================================================
-// User model
-// ===================================================================
-
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
@@ -24,7 +20,7 @@ const userSchema = new mongoose.Schema(
     passwordHash: {
       type: String,
       required: [true, "Password is required"],
-      select: false, // never return it in normal queries
+      select: false,
     },
     role: {
       type: String,
@@ -35,8 +31,6 @@ const userSchema = new mongoose.Schema(
   {
     timestamps: true,
     toJSON: {
-      // When this user is serialized to JSON (e.g., res.json(user)),
-      // strip passwordHash and the internal __v version key.
       transform(doc, ret) {
         delete ret.passwordHash;
         delete ret.__v;

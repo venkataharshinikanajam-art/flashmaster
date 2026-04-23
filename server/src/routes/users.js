@@ -1,7 +1,3 @@
-// ===================================================================
-// User CRUD routes — mounted at /api/users from index.js
-// ===================================================================
-
 import { Router } from "express";
 import { User } from "../models/User.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";

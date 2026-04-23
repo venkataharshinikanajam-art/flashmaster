@@ -1,8 +1,3 @@
-// ===================================================================
-// StudyPlan CRUD — scoped to req.user.
-// Mounted at /api/plans
-// ===================================================================
-
 import { Router } from "express";
 import { StudyPlan } from "../models/StudyPlan.js";
 import { Flashcard } from "../models/Flashcard.js";

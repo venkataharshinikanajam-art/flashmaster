@@ -1,11 +1,3 @@
-// ===================================================================
-// Notifications — computed on the fly from user's plans + flashcards.
-// Mounted at /api/notifications
-//
-// Not stored in DB. Each request returns a fresh list based on
-// current state. Frontend tracks read/dismissed via localStorage.
-// ===================================================================
-
 import { Router } from "express";
 import { StudyPlan } from "../models/StudyPlan.js";
 import { Flashcard } from "../models/Flashcard.js";
