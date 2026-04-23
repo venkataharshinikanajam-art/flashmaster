@@ -55,6 +55,22 @@ temp/
 __pycache__/
 *.pyc
 
+# AI / agent assistant config and workflow files
+CLAUDE.md
+AGENTS.md
+GEMINI.md
+.claude/
+.gemini/
+.anthropic/
+.codex/
+
+# Workflow tracking docs (not part of the deliverable)
+PROGRESS.md
+TASKS.md
+TODO.md
+docs/
+sandbox/
+
 # Word / Office lock files
 ~$*
 

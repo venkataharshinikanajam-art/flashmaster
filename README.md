@@ -109,8 +109,6 @@ Copy `server/.env.example` to `server/.env` and adjust values. Defaults work for
 FLASHCARDS/
 ├── README.md                       # This file
 ├── FLASHMASTER_REPORT.docx         # Project documentation (submission)
-├── PROGRESS.md                     # Phase-by-phase build journey
-├── docs/                           # Learning material + phase playbooks
 ├── ss/                             # Screenshots and rendered diagrams
 ├── diagrams/                       # Mermaid diagram sources
 ├── server/                         # Express backend
