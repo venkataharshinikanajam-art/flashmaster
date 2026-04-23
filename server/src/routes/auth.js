@@ -15,16 +15,19 @@ const signToken = (user) =>
 
 router.post("/signup", async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
 
     if (!password || password.length < 6) {
       return res.status(400).json({ error: "Password must be at least 6 characters" });
     }
 
+    const allowedRoles = ["student", "admin"];
+    const finalRole = allowedRoles.includes(role) ? role : "student";
+
     const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS || "10", 10);
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
-    const user = await User.create({ name, email, passwordHash, role: "student" });
+    const user = await User.create({ name, email, passwordHash, role: finalRole });
     const token = signToken(user);
 
     res.status(201).json({ user, token });

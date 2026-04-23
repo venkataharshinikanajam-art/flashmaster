@@ -5,7 +5,7 @@ import { useAuth } from "../lib/auth.jsx";
 export default function Signup() {
   const { signup } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [form, setForm] = useState({ name: "", email: "", password: "", role: "student" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -34,6 +34,42 @@ export default function Signup() {
         <Field label="Full name" value={form.name} onChange={update("name")} />
         <Field label="Email" type="email" value={form.email} onChange={update("email")} />
         <Field label="Password (min 6 chars)" type="password" value={form.password} onChange={update("password")} />
+
+        <label className="block">
+          <div className="text-sm text-slate-300">Role</div>
+          <div className="mt-2 flex gap-3">
+            <label className={`flex-1 cursor-pointer rounded-md border px-3 py-2 text-sm ${
+              form.role === "student"
+                ? "border-indigo-500 bg-indigo-500/10 text-indigo-200"
+                : "border-slate-700 bg-slate-900 text-slate-400 hover:border-slate-600"
+            }`}>
+              <input
+                type="radio"
+                name="role"
+                value="student"
+                checked={form.role === "student"}
+                onChange={update("role")}
+                className="sr-only"
+              />
+              Student
+            </label>
+            <label className={`flex-1 cursor-pointer rounded-md border px-3 py-2 text-sm ${
+              form.role === "admin"
+                ? "border-amber-500 bg-amber-500/10 text-amber-200"
+                : "border-slate-700 bg-slate-900 text-slate-400 hover:border-slate-600"
+            }`}>
+              <input
+                type="radio"
+                name="role"
+                value="admin"
+                checked={form.role === "admin"}
+                onChange={update("role")}
+                className="sr-only"
+              />
+              Admin
+            </label>
+          </div>
+        </label>
 
         {error && (
           <div className="rounded-md bg-red-950/60 border border-red-900 text-red-300 px-3 py-2 text-sm">
