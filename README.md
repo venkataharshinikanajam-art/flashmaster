@@ -8,6 +8,7 @@ Built by **Venkata Harshini Kanajam** as a university project for **SRM — Full
 
 ## Submission Links
 
+- **Live App:** [flashmaster-three.vercel.app](https://flashmaster-three.vercel.app) (use this from any laptop — sign up as Student or Admin)
 - **Project Documentation:** [`FLASHMASTER_REPORT.docx`](./FLASHMASTER_REPORT.docx)
 - **Project Overview Video:** [Watch on Google Drive](https://drive.google.com/file/d/13laCkmfLTP5Do-R4tMpo0vT3qxWe7One/view?usp=sharing)
 - **Code Explanation Video:** [Watch on Google Drive](https://drive.google.com/file/d/193JGzvS2ED0ILRLsKOAN6gDrgnrdhGzX/view?usp=drive_link)

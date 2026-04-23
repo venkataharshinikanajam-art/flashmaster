@@ -624,6 +624,10 @@ client/
 
 [github.com/venkataharshinikanajam-art/flashmaster](https://github.com/venkataharshinikanajam-art/flashmaster)
 
+## Live Application
+
+[flashmaster-three.vercel.app](https://flashmaster-three.vercel.app) — open from any laptop, sign up as Student or Admin.
+
 ## Code Drive Link
 
 [FLASHMASTER — full project code on Google Drive](https://drive.google.com/PASTE-YOUR-CODE-DRIVE-LINK-HERE)
