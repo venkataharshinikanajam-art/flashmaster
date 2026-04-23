@@ -15,7 +15,7 @@ build/
 **/build/
 
 # Uploaded files (user-generated, not code)
-server/uploads/
+backend/uploads/
 uploads/
 
 # Logs
@@ -30,12 +30,13 @@ Thumbs.db
 desktop.ini
 
 # Editor / IDE
-.vscode/*
-!.vscode/extensions.json
-!.vscode/settings.json.example
+.vscode/
 .idea/
 *.swp
 *.swo
+
+# Claude Code workspace metadata
+.claude/
 
 # Runtime / cache
 .cache/
@@ -51,33 +52,8 @@ tmp/
 temp/
 *.tmp
 
-# Python leftovers (just in case)
-__pycache__/
-*.pyc
-
-# AI / agent assistant config and workflow files
-CLAUDE.md
-AGENTS.md
-GEMINI.md
-.claude/
-.gemini/
-.anthropic/
-.codex/
-
-# Workflow tracking docs (not part of the deliverable)
-PROGRESS.md
-TASKS.md
-TODO.md
-docs/
-sandbox/
-
 # Word / Office lock files
 ~$*
-
-# Old / sample / scratch documents — not part of the deliverable
-MedlyPharma.docx.pdf
-FLASHMASTER_REPORT_v*.docx
-DEMO_VIDEO_SCRIPT_v*.docx
 
 # Do NOT ignore these
 !.gitkeep

@@ -2,12 +2,12 @@
   "name": "flashmaster",
   "version": "0.1.0",
   "private": true,
-  "description": "FLASHMASTER — Exam Helper App (MERN). Run both client and server with one command.",
+  "description": "FLASHMASTER - Exam Helper App (MERN). Run both frontend and backend with one command.",
   "scripts": {
-    "dev": "concurrently -n \"server,client\" -c \"blue,magenta\" \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
-    "start:server": "npm --prefix server run dev",
-    "start:client": "npm --prefix client run dev",
-    "install:all": "npm install && npm --prefix server install && npm --prefix client install"
+    "dev": "concurrently -n \"backend,frontend\" -c \"blue,magenta\" \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\"",
+    "start:backend": "npm --prefix backend run dev",
+    "start:frontend": "npm --prefix frontend run dev",
+    "install:all": "npm install && npm --prefix backend install && npm --prefix frontend install"
   },
   "devDependencies": {
     "concurrently": "^9.0.0"
